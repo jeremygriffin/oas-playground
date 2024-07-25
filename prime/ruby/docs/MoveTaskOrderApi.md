@@ -1,6 +1,6 @@
 # OpenapiClient::MoveTaskOrderApi
 
-All URIs are relative to */prime/v2*
+All URIs are relative to */prime/v3*
 
 | Method | HTTP request | Description |
 | ------ | ------------ | ----------- |
@@ -9,11 +9,11 @@ All URIs are relative to */prime/v2*
 
 ## get_move_task_order
 
-> <MoveTaskOrderV2> get_move_task_order(move_id)
+> <MoveTaskOrderV3> get_move_task_order(move_id)
 
 getMoveTaskOrder
 
-### Functionality This endpoint gets an individual MoveTaskOrder by ID.  It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests.  **NOTE**: New version in v3. Version will return PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode, destinationPostalCode and secondaryDestinationPostalCode]. 
+### Functionality This endpoint gets an individual MoveTaskOrder by ID.  It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests. 
 
 ### Examples
 
@@ -22,7 +22,7 @@ require 'time'
 require 'openapi_client'
 
 api_instance = OpenapiClient::MoveTaskOrderApi.new
-move_id = 'move_id_example' # String | UUID or MoveCode of move task order to use.
+move_id = 'move_id_example' # String | UUID or MoveCode of move task order to use........
 
 begin
   # getMoveTaskOrder
@@ -37,7 +37,7 @@ end
 
 This returns an Array which contains the response data, status code and headers.
 
-> <Array(<MoveTaskOrderV2>, Integer, Hash)> get_move_task_order_with_http_info(move_id)
+> <Array(<MoveTaskOrderV3>, Integer, Hash)> get_move_task_order_with_http_info(move_id)
 
 ```ruby
 begin
@@ -45,7 +45,7 @@ begin
   data, status_code, headers = api_instance.get_move_task_order_with_http_info(move_id)
   p status_code # => 2xx
   p headers # => { ... }
-  p data # => <MoveTaskOrderV2>
+  p data # => <MoveTaskOrderV3>
 rescue OpenapiClient::ApiError => e
   puts "Error when calling MoveTaskOrderApi->get_move_task_order_with_http_info: #{e}"
 end
@@ -55,11 +55,11 @@ end
 
 | Name | Type | Description | Notes |
 | ---- | ---- | ----------- | ----- |
-| **move_id** | **String** | UUID or MoveCode of move task order to use. |  |
+| **move_id** | **String** | UUID or MoveCode of move task order to use........ |  |
 
 ### Return type
 
-[**MoveTaskOrderV2**](MoveTaskOrderV2.md)
+[**MoveTaskOrderV3**](MoveTaskOrderV3.md)
 
 ### Authorization
 

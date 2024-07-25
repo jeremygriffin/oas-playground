@@ -1,7 +1,7 @@
 =begin
-#MilMove Prime V2 API
+#MilMove Prime V3 API
 
-#The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
+#The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. 
 
 The version of the OpenAPI document: 0.0.1
 Contact: milmove-developers@caci.com
@@ -20,20 +20,20 @@ module OpenapiClient
       @api_client = api_client
     end
     # createMTOShipment
-    # Creates a new shipment within the specified move. This endpoint should be used whenever the movers identify a need for an additional shipment. The new shipment will be submitted to the TOO for review, and the TOO must approve it before the contractor can proceed with billing.  **NOTE**: When creating a child shipment diversion, you can no longer specify the `primeActualWeight`. If you create a new diverted shipment with the `diversion` and `divertedFromShipmentId` parameter, it will automatically inherit the primeActualWeight of its `divertedFromShipmentId` parent. Payment requests created on a diverted shipment \"chain\" will utilize the lowest weight possible in the chain to prevent overcharging as they are still separate shipments.  **NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode, destinationPostalCode and secondaryDestinationPostalCode].  **WIP**: The Prime should be notified by a push notification whenever the TOO approves a shipment connected to one of their moves. Otherwise, the Prime can fetch the related move using the [getMoveTaskOrder](#operation/getMoveTaskOrder) endpoint and see if this shipment has the status `\"APPROVED\"`. 
+    # Creates a new shipment within the specified move. This endpoint should be used whenever the movers identify a need for an additional shipment. The new shipment will be submitted to the TOO for review, and the TOO must approve it before the contractor can proceed with billing.  **NOTE**: When creating a child shipment diversion, you can no longer specify the `primeActualWeight`. If you create a new diverted shipment with the `diversion` and `divertedFromShipmentId` parameter, it will automatically inherit the primeActualWeight of its `divertedFromShipmentId` parent. Payment requests created on a diverted shipment \"chain\" will utilize the lowest weight possible in the chain to prevent overcharging as they are still separate shipments.  **WIP**: The Prime should be notified by a push notification whenever the TOO approves a shipment connected to one of their moves. Otherwise, the Prime can fetch the related move using the [getMoveTaskOrder](#operation/getMoveTaskOrder) endpoint and see if this shipment has the status `\"APPROVED\"`. 
     # @param [Hash] opts the optional parameters
-    # @option opts [CreateMTOShipmentV2] :body 
-    # @return [MTOShipmentV2]
+    # @option opts [CreateMTOShipmentV3] :body 
+    # @return [MTOShipmentV3]
     def create_mto_shipment(opts = {})
       data, _status_code, _headers = create_mto_shipment_with_http_info(opts)
       data
     end
 
     # createMTOShipment
-    # Creates a new shipment within the specified move. This endpoint should be used whenever the movers identify a need for an additional shipment. The new shipment will be submitted to the TOO for review, and the TOO must approve it before the contractor can proceed with billing.  **NOTE**: When creating a child shipment diversion, you can no longer specify the &#x60;primeActualWeight&#x60;. If you create a new diverted shipment with the &#x60;diversion&#x60; and &#x60;divertedFromShipmentId&#x60; parameter, it will automatically inherit the primeActualWeight of its &#x60;divertedFromShipmentId&#x60; parent. Payment requests created on a diverted shipment \&quot;chain\&quot; will utilize the lowest weight possible in the chain to prevent overcharging as they are still separate shipments.  **NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode, destinationPostalCode and secondaryDestinationPostalCode].  **WIP**: The Prime should be notified by a push notification whenever the TOO approves a shipment connected to one of their moves. Otherwise, the Prime can fetch the related move using the [getMoveTaskOrder](#operation/getMoveTaskOrder) endpoint and see if this shipment has the status &#x60;\&quot;APPROVED\&quot;&#x60;. 
+    # Creates a new shipment within the specified move. This endpoint should be used whenever the movers identify a need for an additional shipment. The new shipment will be submitted to the TOO for review, and the TOO must approve it before the contractor can proceed with billing.  **NOTE**: When creating a child shipment diversion, you can no longer specify the &#x60;primeActualWeight&#x60;. If you create a new diverted shipment with the &#x60;diversion&#x60; and &#x60;divertedFromShipmentId&#x60; parameter, it will automatically inherit the primeActualWeight of its &#x60;divertedFromShipmentId&#x60; parent. Payment requests created on a diverted shipment \&quot;chain\&quot; will utilize the lowest weight possible in the chain to prevent overcharging as they are still separate shipments.  **WIP**: The Prime should be notified by a push notification whenever the TOO approves a shipment connected to one of their moves. Otherwise, the Prime can fetch the related move using the [getMoveTaskOrder](#operation/getMoveTaskOrder) endpoint and see if this shipment has the status &#x60;\&quot;APPROVED\&quot;&#x60;. 
     # @param [Hash] opts the optional parameters
-    # @option opts [CreateMTOShipmentV2] :body 
-    # @return [Array<(MTOShipmentV2, Integer, Hash)>] MTOShipmentV2 data, response status code and response headers
+    # @option opts [CreateMTOShipmentV3] :body 
+    # @return [Array<(MTOShipmentV3, Integer, Hash)>] MTOShipmentV3 data, response status code and response headers
     def create_mto_shipment_with_http_info(opts = {})
       if @api_client.config.debugging
         @api_client.config.logger.debug 'Calling API: MtoShipmentApi.create_mto_shipment ...'
@@ -61,7 +61,7 @@ module OpenapiClient
       post_body = opts[:debug_body] || @api_client.object_to_http_body(opts[:'body'])
 
       # return_type
-      return_type = opts[:debug_return_type] || 'MTOShipmentV2'
+      return_type = opts[:debug_return_type] || 'MTOShipmentV3'
 
       # auth_names
       auth_names = opts[:debug_auth_names] || []
@@ -84,24 +84,24 @@ module OpenapiClient
     end
 
     # updateMTOShipment
-    # Updates an existing shipment for a move.  Note that there are some restrictions on nested objects:  * Service items: You cannot add or update service items using this endpoint. Please use [createMTOServiceItem](#operation/createMTOServiceItem) and [updateMTOServiceItem](#operation/updateMTOServiceItem) instead. * Agents: You cannot add or update agents using this endpoint. Please use [createMTOAgent](#operation/createMTOAgent) and [updateMTOAgent](#operation/updateMTOAgent) instead. * Addresses: You can add new addresses using this endpoint (and must use this endpoint to do so), but you cannot update existing ones. Please use [updateMTOShipmentAddress](#operation/updateMTOShipmentAddress) instead.  These restrictions are due to our [optimistic locking/concurrency control](https://transcom.github.io/mymove-docs/docs/dev/contributing/backend/use-optimistic-locking) mechanism.  Note that some fields cannot be manually changed but will still be updated automatically, such as `primeEstimatedWeightRecordedDate` and `requiredDeliveryDate`.  **NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode, destinationPostalCode and secondaryDestinationPostalCode]. 
+    # Updates an existing shipment for a move.  Note that there are some restrictions on nested objects:  * Service items: You cannot add or update service items using this endpoint. Please use [createMTOServiceItem](#operation/createMTOServiceItem) and [updateMTOServiceItem](#operation/updateMTOServiceItem) instead. * Agents: You cannot add or update agents using this endpoint. Please use [createMTOAgent](#operation/createMTOAgent) and [updateMTOAgent](#operation/updateMTOAgent) instead. * Addresses: You can add new addresses using this endpoint (and must use this endpoint to do so), but you cannot update existing ones. Please use [updateMTOShipmentAddress](#operation/updateMTOShipmentAddress) instead.  These restrictions are due to our [optimistic locking/concurrency control](https://transcom.github.io/mymove-docs/docs/dev/contributing/backend/use-optimistic-locking) mechanism.  Note that some fields cannot be manually changed but will still be updated automatically, such as `primeEstimatedWeightRecordedDate` and `requiredDeliveryDate`. 
     # @param mto_shipment_id [String] UUID of the shipment being updated.
     # @param if_match [String] Optimistic locking is implemented via the &#x60;If-Match&#x60; header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a &#x60;412 Precondition Failed&#x60; error. 
-    # @param body [UpdateMTOShipmentV2] 
+    # @param body [UpdateMTOShipmentV3] 
     # @param [Hash] opts the optional parameters
-    # @return [MTOShipmentV2]
+    # @return [MTOShipmentV3]
     def update_mto_shipment(mto_shipment_id, if_match, body, opts = {})
       data, _status_code, _headers = update_mto_shipment_with_http_info(mto_shipment_id, if_match, body, opts)
       data
     end
 
     # updateMTOShipment
-    # Updates an existing shipment for a move.  Note that there are some restrictions on nested objects:  * Service items: You cannot add or update service items using this endpoint. Please use [createMTOServiceItem](#operation/createMTOServiceItem) and [updateMTOServiceItem](#operation/updateMTOServiceItem) instead. * Agents: You cannot add or update agents using this endpoint. Please use [createMTOAgent](#operation/createMTOAgent) and [updateMTOAgent](#operation/updateMTOAgent) instead. * Addresses: You can add new addresses using this endpoint (and must use this endpoint to do so), but you cannot update existing ones. Please use [updateMTOShipmentAddress](#operation/updateMTOShipmentAddress) instead.  These restrictions are due to our [optimistic locking/concurrency control](https://transcom.github.io/mymove-docs/docs/dev/contributing/backend/use-optimistic-locking) mechanism.  Note that some fields cannot be manually changed but will still be updated automatically, such as &#x60;primeEstimatedWeightRecordedDate&#x60; and &#x60;requiredDeliveryDate&#x60;.  **NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode, destinationPostalCode and secondaryDestinationPostalCode]. 
+    # Updates an existing shipment for a move.  Note that there are some restrictions on nested objects:  * Service items: You cannot add or update service items using this endpoint. Please use [createMTOServiceItem](#operation/createMTOServiceItem) and [updateMTOServiceItem](#operation/updateMTOServiceItem) instead. * Agents: You cannot add or update agents using this endpoint. Please use [createMTOAgent](#operation/createMTOAgent) and [updateMTOAgent](#operation/updateMTOAgent) instead. * Addresses: You can add new addresses using this endpoint (and must use this endpoint to do so), but you cannot update existing ones. Please use [updateMTOShipmentAddress](#operation/updateMTOShipmentAddress) instead.  These restrictions are due to our [optimistic locking/concurrency control](https://transcom.github.io/mymove-docs/docs/dev/contributing/backend/use-optimistic-locking) mechanism.  Note that some fields cannot be manually changed but will still be updated automatically, such as &#x60;primeEstimatedWeightRecordedDate&#x60; and &#x60;requiredDeliveryDate&#x60;. 
     # @param mto_shipment_id [String] UUID of the shipment being updated.
     # @param if_match [String] Optimistic locking is implemented via the &#x60;If-Match&#x60; header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a &#x60;412 Precondition Failed&#x60; error. 
-    # @param body [UpdateMTOShipmentV2] 
+    # @param body [UpdateMTOShipmentV3] 
     # @param [Hash] opts the optional parameters
-    # @return [Array<(MTOShipmentV2, Integer, Hash)>] MTOShipmentV2 data, response status code and response headers
+    # @return [Array<(MTOShipmentV3, Integer, Hash)>] MTOShipmentV3 data, response status code and response headers
     def update_mto_shipment_with_http_info(mto_shipment_id, if_match, body, opts = {})
       if @api_client.config.debugging
         @api_client.config.logger.debug 'Calling API: MtoShipmentApi.update_mto_shipment ...'
@@ -142,7 +142,7 @@ module OpenapiClient
       post_body = opts[:debug_body] || @api_client.object_to_http_body(body)
 
       # return_type
-      return_type = opts[:debug_return_type] || 'MTOShipmentV2'
+      return_type = opts[:debug_return_type] || 'MTOShipmentV3'
 
       # auth_names
       auth_names = opts[:debug_auth_names] || []

@@ -1,7 +1,7 @@
 =begin
-#MilMove Prime V2 API
+#MilMove Prime V3 API
 
-#The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
+#The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. 
 
 The version of the OpenAPI document: 0.0.1
 Contact: milmove-developers@caci.com
@@ -20,20 +20,20 @@ module OpenapiClient
       @api_client = api_client
     end
     # getMoveTaskOrder
-    # ### Functionality This endpoint gets an individual MoveTaskOrder by ID.  It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests.  **NOTE**: New version in v3. Version will return PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode, destinationPostalCode and secondaryDestinationPostalCode]. 
-    # @param move_id [String] UUID or MoveCode of move task order to use.
+    # ### Functionality This endpoint gets an individual MoveTaskOrder by ID.  It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests. 
+    # @param move_id [String] UUID or MoveCode of move task order to use........
     # @param [Hash] opts the optional parameters
-    # @return [MoveTaskOrderV2]
+    # @return [MoveTaskOrderV3]
     def get_move_task_order(move_id, opts = {})
       data, _status_code, _headers = get_move_task_order_with_http_info(move_id, opts)
       data
     end
 
     # getMoveTaskOrder
-    # ### Functionality This endpoint gets an individual MoveTaskOrder by ID.  It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests.  **NOTE**: New version in v3. Version will return PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode, destinationPostalCode and secondaryDestinationPostalCode]. 
-    # @param move_id [String] UUID or MoveCode of move task order to use.
+    # ### Functionality This endpoint gets an individual MoveTaskOrder by ID.  It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests. 
+    # @param move_id [String] UUID or MoveCode of move task order to use........
     # @param [Hash] opts the optional parameters
-    # @return [Array<(MoveTaskOrderV2, Integer, Hash)>] MoveTaskOrderV2 data, response status code and response headers
+    # @return [Array<(MoveTaskOrderV3, Integer, Hash)>] MoveTaskOrderV3 data, response status code and response headers
     def get_move_task_order_with_http_info(move_id, opts = {})
       if @api_client.config.debugging
         @api_client.config.logger.debug 'Calling API: MoveTaskOrderApi.get_move_task_order ...'
@@ -60,7 +60,7 @@ module OpenapiClient
       post_body = opts[:debug_body]
 
       # return_type
-      return_type = opts[:debug_return_type] || 'MoveTaskOrderV2'
+      return_type = opts[:debug_return_type] || 'MoveTaskOrderV3'
 
       # auth_names
       auth_names = opts[:debug_auth_names] || []

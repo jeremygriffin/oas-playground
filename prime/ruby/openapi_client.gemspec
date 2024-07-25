@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 
 =begin
-#MilMove Prime V2 API
+#MilMove Prime V3 API
 
-#The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
+#The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. 
 
 The version of the OpenAPI document: 0.0.1
 Contact: milmove-developers@caci.com
@@ -22,8 +22,8 @@ Gem::Specification.new do |s|
   s.authors     = ["OpenAPI-Generator"]
   s.email       = ["milmove-developers@caci.com"]
   s.homepage    = "https://openapi-generator.tech"
-  s.summary     = "MilMove Prime V2 API Ruby Gem"
-  s.description = "The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. "
+  s.summary     = "MilMove Prime V3 API Ruby Gem"
+  s.description = "The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. "
   s.license     = "Unlicense"
   s.required_ruby_version = ">= 2.7"
   s.metadata    = {}

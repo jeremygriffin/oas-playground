@@ -1,7 +1,7 @@
 =begin
-#MilMove Prime V2 API
+#MilMove Prime V3 API
 
-#The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
+#The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. 
 
 The version of the OpenAPI document: 0.0.1
 Contact: milmove-developers@caci.com
@@ -159,7 +159,7 @@ module OpenapiClient
     def initialize
       @scheme = 'http'
       @host = 'localhost'
-      @base_path = '/prime/v2'
+      @base_path = '/prime/v3'
       @server_index = nil
       @server_operation_index = {}
       @server_variables = {}
@@ -251,7 +251,7 @@ module OpenapiClient
     def server_settings
       [
         {
-          url: "/prime/v2",
+          url: "/prime/v3",
           description: "No description provided",
         }
       ]
