@@ -1,0 +1,15 @@
+# OpenapiClient::ShipmentAddressUpdateStatus
+
+## Properties
+
+| Name | Type | Description | Notes |
+| ---- | ---- | ----------- | ----- |
+
+## Example
+
+```ruby
+require 'openapi_client'
+
+instance = OpenapiClient::ShipmentAddressUpdateStatus.new()
+```
+
