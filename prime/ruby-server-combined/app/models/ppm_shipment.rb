@@ -1,7 +1,7 @@
 =begin
-MilMove Prime V2 API
+MilMove Prime V3 API
 
-The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
+The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. 
 
 The version of the OpenAPI document: 0.0.1
 Contact: milmove-developers@caci.com
@@ -16,6 +16,8 @@ class PPMShipment < ApplicationRecord
   validates_presence_of :created_at
   validates_presence_of :status
   validates_presence_of :expected_departure_date
+  validates_presence_of :pickup_address
+  validates_presence_of :destination_address
   validates_presence_of :sit_expected
   validates_presence_of :e_tag
 

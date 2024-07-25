@@ -1,7 +1,7 @@
 =begin
-MilMove Prime V2 API
+MilMove Prime V3 API
 
-The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
+The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. 
 
 The version of the OpenAPI document: 0.0.1
 Contact: milmove-developers@caci.com
@@ -56,7 +56,9 @@ class InitTables < ActiveRecord::Migration
     create_table "create_ppm_shipment".pluralize.to_sym, id: false do |t|
       t.Date :expected_departure_date
       t.string :pickup_address
+      t.string :secondary_pickup_address
       t.string :destination_address
+      t.string :secondary_destination_address
       t.boolean :sit_expected
       t.string :sit_location
       t.integer :sit_estimated_weight
@@ -321,8 +323,6 @@ class InitTables < ActiveRecord::Migration
       t.integer :nts_recorded_weight
       t.string :customer_remarks
       t.string :counselor_remarks
-      t.integer :actual_pro_gear_weight
-      t.integer :actual_spouse_pro_gear_weight
       t.string :agents
       t.string :sit_extensions
       t.string :reweigh
@@ -371,8 +371,6 @@ class InitTables < ActiveRecord::Migration
       t.integer :nts_recorded_weight
       t.string :customer_remarks
       t.string :counselor_remarks
-      t.integer :actual_pro_gear_weight
-      t.integer :actual_spouse_pro_gear_weight
       t.string :agents
       t.string :sit_extensions
       t.string :reweigh
@@ -460,7 +458,13 @@ class InitTables < ActiveRecord::Migration
       t.datetime :submitted_at
       t.datetime :reviewed_at
       t.datetime :approved_at
+      t.string :pickup_address
+      t.string :secondary_pickup_address
+      t.boolean :has_secondary_pickup_address
       t.string :actual_pickup_postal_code
+      t.string :destination_address
+      t.string :secondary_destination_address
+      t.boolean :has_secondary_destination_address
       t.string :actual_destination_postal_code
       t.boolean :sit_expected
       t.integer :estimated_weight
@@ -712,6 +716,8 @@ class InitTables < ActiveRecord::Migration
     end
 
     create_table "update_mto_shipment".pluralize.to_sym, id: false do |t|
+      t.integer :actual_pro_gear_weight
+      t.integer :actual_spouse_pro_gear_weight
       t.Date :scheduled_pickup_date
       t.Date :actual_pickup_date
       t.Date :first_available_delivery_date
@@ -730,8 +736,6 @@ class InitTables < ActiveRecord::Migration
       t.boolean :diversion
       t.string :point_of_contact
       t.string :counselor_remarks
-      t.integer :actual_pro_gear_weight
-      t.integer :actual_spouse_pro_gear_weight
       t.string :ppm_shipment
 
       t.timestamps
@@ -757,6 +761,12 @@ class InitTables < ActiveRecord::Migration
 
     create_table "update_ppm_shipment".pluralize.to_sym, id: false do |t|
       t.Date :expected_departure_date
+      t.string :pickup_address
+      t.boolean :has_secondary_pickup_address
+      t.string :secondary_pickup_address
+      t.string :destination_address
+      t.boolean :has_secondary_destination_address
+      t.string :secondary_destination_address
       t.boolean :sit_expected
       t.string :sit_location
       t.integer :sit_estimated_weight
