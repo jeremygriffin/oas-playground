@@ -1,7 +1,7 @@
 /*
-MilMove Prime V2 API
+MilMove Prime V3 API
 
-The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
+The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. 
 
 API version: 0.0.1
 Contact: milmove-developers@caci.com
@@ -27,15 +27,15 @@ type MtoShipmentAPIService service
 type ApiCreateMTOShipmentRequest struct {
 	ctx context.Context
 	ApiService *MtoShipmentAPIService
-	body *CreateMTOShipmentV2
+	body *CreateMTOShipmentV3
 }
 
-func (r ApiCreateMTOShipmentRequest) Body(body CreateMTOShipmentV2) ApiCreateMTOShipmentRequest {
+func (r ApiCreateMTOShipmentRequest) Body(body CreateMTOShipmentV3) ApiCreateMTOShipmentRequest {
 	r.body = &body
 	return r
 }
 
-func (r ApiCreateMTOShipmentRequest) Execute() (*MTOShipmentV2V2, *http.Response, error) {
+func (r ApiCreateMTOShipmentRequest) Execute() (*MTOShipmentV3V3, *http.Response, error) {
 	return r.ApiService.CreateMTOShipmentExecute(r)
 }
 
@@ -50,10 +50,6 @@ approve it before the contractor can proceed with billing.
 If you create a new diverted shipment with the `diversion` and `divertedFromShipmentId` parameter, it will automatically
 inherit the primeActualWeight of its `divertedFromShipmentId` parent. Payment requests created on a diverted shipment "chain" will utilize
 the lowest weight possible in the chain to prevent overcharging as they are still separate shipments.
-
-**NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
-secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
-destinationPostalCode and secondaryDestinationPostalCode].
 
 **WIP**: The Prime should be notified by a push notification whenever the TOO approves a shipment connected to
 one of their moves. Otherwise, the Prime can fetch the related move using the
@@ -71,13 +67,13 @@ func (a *MtoShipmentAPIService) CreateMTOShipment(ctx context.Context) ApiCreate
 }
 
 // Execute executes the request
-//  @return MTOShipmentV2V2
-func (a *MtoShipmentAPIService) CreateMTOShipmentExecute(r ApiCreateMTOShipmentRequest) (*MTOShipmentV2V2, *http.Response, error) {
+//  @return MTOShipmentV3V3
+func (a *MtoShipmentAPIService) CreateMTOShipmentExecute(r ApiCreateMTOShipmentRequest) (*MTOShipmentV3V3, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *MTOShipmentV2V2
+		localVarReturnValue  *MTOShipmentV3V3
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MtoShipmentAPIService.CreateMTOShipment")
@@ -133,7 +129,7 @@ func (a *MtoShipmentAPIService) CreateMTOShipmentExecute(r ApiCreateMTOShipmentR
 			error: localVarHTTPResponse.Status,
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -144,7 +140,7 @@ func (a *MtoShipmentAPIService) CreateMTOShipmentExecute(r ApiCreateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -155,7 +151,7 @@ func (a *MtoShipmentAPIService) CreateMTOShipmentExecute(r ApiCreateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 422 {
-			var v ValidationErrorV2V2
+			var v ValidationErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -166,7 +162,7 @@ func (a *MtoShipmentAPIService) CreateMTOShipmentExecute(r ApiCreateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
-			var v ErrorV2V2
+			var v ErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -195,7 +191,7 @@ type ApiUpdateMTOShipmentRequest struct {
 	ApiService *MtoShipmentAPIService
 	mtoShipmentID string
 	ifMatch *string
-	body *UpdateMTOShipmentV2
+	body *UpdateMTOShipmentV3
 }
 
 // Optimistic locking is implemented via the &#x60;If-Match&#x60; header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a &#x60;412 Precondition Failed&#x60; error. 
@@ -204,12 +200,12 @@ func (r ApiUpdateMTOShipmentRequest) IfMatch(ifMatch string) ApiUpdateMTOShipmen
 	return r
 }
 
-func (r ApiUpdateMTOShipmentRequest) Body(body UpdateMTOShipmentV2) ApiUpdateMTOShipmentRequest {
+func (r ApiUpdateMTOShipmentRequest) Body(body UpdateMTOShipmentV3) ApiUpdateMTOShipmentRequest {
 	r.body = &body
 	return r
 }
 
-func (r ApiUpdateMTOShipmentRequest) Execute() (*MTOShipmentV2V2, *http.Response, error) {
+func (r ApiUpdateMTOShipmentRequest) Execute() (*MTOShipmentV3V3, *http.Response, error) {
 	return r.ApiService.UpdateMTOShipmentExecute(r)
 }
 
@@ -228,10 +224,6 @@ These restrictions are due to our [optimistic locking/concurrency control](https
 
 Note that some fields cannot be manually changed but will still be updated automatically, such as `primeEstimatedWeightRecordedDate` and `requiredDeliveryDate`.
 
-**NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
-secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
-destinationPostalCode and secondaryDestinationPostalCode].
-
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @param mtoShipmentID UUID of the shipment being updated.
@@ -246,13 +238,13 @@ func (a *MtoShipmentAPIService) UpdateMTOShipment(ctx context.Context, mtoShipme
 }
 
 // Execute executes the request
-//  @return MTOShipmentV2V2
-func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentRequest) (*MTOShipmentV2V2, *http.Response, error) {
+//  @return MTOShipmentV3V3
+func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentRequest) (*MTOShipmentV3V3, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPatch
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *MTOShipmentV2V2
+		localVarReturnValue  *MTOShipmentV3V3
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MtoShipmentAPIService.UpdateMTOShipment")
@@ -316,7 +308,7 @@ func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentR
 			error: localVarHTTPResponse.Status,
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -327,7 +319,7 @@ func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -338,7 +330,7 @@ func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -349,7 +341,7 @@ func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -360,7 +352,7 @@ func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 412 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -371,7 +363,7 @@ func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 422 {
-			var v ValidationErrorV2V2
+			var v ValidationErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -382,7 +374,7 @@ func (a *MtoShipmentAPIService) UpdateMTOShipmentExecute(r ApiUpdateMTOShipmentR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
-			var v ErrorV2V2
+			var v ErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

@@ -1,6 +1,6 @@
 # \MoveTaskOrderAPI
 
-All URIs are relative to */prime/v2*
+All URIs are relative to */prime/v3*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 ## GetMoveTaskOrder
 
-> MoveTaskOrderV2V2 GetMoveTaskOrder(ctx, moveID).Execute()
+> MoveTaskOrderV3V3 GetMoveTaskOrder(ctx, moveID).Execute()
 
 getMoveTaskOrder
 
@@ -29,7 +29,7 @@ import (
 )
 
 func main() {
-	moveID := "moveID_example" // string | UUID or MoveCode of move task order to use.
+	moveID := "moveID_example" // string | UUID or MoveCode of move task order to use........
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -38,7 +38,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `MoveTaskOrderAPI.GetMoveTaskOrder``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `GetMoveTaskOrder`: MoveTaskOrderV2V2
+	// response from `GetMoveTaskOrder`: MoveTaskOrderV3V3
 	fmt.Fprintf(os.Stdout, "Response from `MoveTaskOrderAPI.GetMoveTaskOrder`: %v\n", resp)
 }
 ```
@@ -49,7 +49,7 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**moveID** | **string** | UUID or MoveCode of move task order to use. | 
+**moveID** | **string** | UUID or MoveCode of move task order to use........ | 
 
 ### Other Parameters
 
@@ -62,7 +62,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**MoveTaskOrderV2V2**](MoveTaskOrderV2.md)
+[**MoveTaskOrderV3V3**](MoveTaskOrderV3.md)
 
 ### Authorization
 

@@ -1,7 +1,7 @@
 /*
-MilMove Prime V2 API
+MilMove Prime V3 API
 
-The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
+The Prime V3 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v3/`. 
 
 API version: 0.0.1
 Contact: milmove-developers@caci.com
@@ -30,7 +30,7 @@ type ApiGetMoveTaskOrderRequest struct {
 	moveID string
 }
 
-func (r ApiGetMoveTaskOrderRequest) Execute() (*MoveTaskOrderV2V2, *http.Response, error) {
+func (r ApiGetMoveTaskOrderRequest) Execute() (*MoveTaskOrderV3V3, *http.Response, error) {
 	return r.ApiService.GetMoveTaskOrderExecute(r)
 }
 
@@ -42,13 +42,9 @@ This endpoint gets an individual MoveTaskOrder by ID.
 
 It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests.
 
-**NOTE**: New version in v3. Version will return PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
-secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
-destinationPostalCode and secondaryDestinationPostalCode].
-
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param moveID UUID or MoveCode of move task order to use.
+ @param moveID UUID or MoveCode of move task order to use........
  @return ApiGetMoveTaskOrderRequest
 */
 func (a *MoveTaskOrderAPIService) GetMoveTaskOrder(ctx context.Context, moveID string) ApiGetMoveTaskOrderRequest {
@@ -60,13 +56,13 @@ func (a *MoveTaskOrderAPIService) GetMoveTaskOrder(ctx context.Context, moveID s
 }
 
 // Execute executes the request
-//  @return MoveTaskOrderV2V2
-func (a *MoveTaskOrderAPIService) GetMoveTaskOrderExecute(r ApiGetMoveTaskOrderRequest) (*MoveTaskOrderV2V2, *http.Response, error) {
+//  @return MoveTaskOrderV3V3
+func (a *MoveTaskOrderAPIService) GetMoveTaskOrderExecute(r ApiGetMoveTaskOrderRequest) (*MoveTaskOrderV3V3, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *MoveTaskOrderV2V2
+		localVarReturnValue  *MoveTaskOrderV3V3
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MoveTaskOrderAPIService.GetMoveTaskOrder")
@@ -121,7 +117,7 @@ func (a *MoveTaskOrderAPIService) GetMoveTaskOrderExecute(r ApiGetMoveTaskOrderR
 			error: localVarHTTPResponse.Status,
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -132,7 +128,7 @@ func (a *MoveTaskOrderAPIService) GetMoveTaskOrderExecute(r ApiGetMoveTaskOrderR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -143,7 +139,7 @@ func (a *MoveTaskOrderAPIService) GetMoveTaskOrderExecute(r ApiGetMoveTaskOrderR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
-			var v ClientErrorV2V2
+			var v ClientErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -154,7 +150,7 @@ func (a *MoveTaskOrderAPIService) GetMoveTaskOrderExecute(r ApiGetMoveTaskOrderR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
-			var v ErrorV2V2
+			var v ErrorV3V3
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

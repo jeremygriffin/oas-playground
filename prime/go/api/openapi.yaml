@@ -3,18 +3,18 @@ info:
   contact:
     email: milmove-developers@caci.com
   description: |
-    The Prime V2 API is a RESTful API that enables the Prime contractor to request
+    The Prime V3 API is a RESTful API that enables the Prime contractor to request
     information about upcoming moves, update the details and status of those moves,
     and make payment requests. It uses Mutual TLS for authentication procedures.
 
-    All endpoints are located at `/prime/v2/`.
+    All endpoints are located at `/prime/v3/`.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  title: MilMove Prime V2 API
+  title: MilMove Prime V3 API
   version: 0.0.1
 servers:
-- url: /prime/v2
+- url: /prime/v3
 tags:
 - description: |
     The **moveTaskOrder** represents a military move that has been sent to a contractor. It contains all the information about shipments, including service items, estimated weights, actual weights, requested and scheduled move dates, etc.
@@ -36,13 +36,9 @@ paths:
         This endpoint gets an individual MoveTaskOrder by ID.
 
         It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests.
-
-        **NOTE**: New version in v3. Version will return PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
-        secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
-        destinationPostalCode and secondaryDestinationPostalCode].
       operationId: getMoveTaskOrder
       parameters:
-      - description: UUID or MoveCode of move task order to use.
+      - description: UUID or MoveCode of move task order to use........
         in: path
         name: moveID
         required: true
@@ -93,10 +89,6 @@ paths:
         If you create a new diverted shipment with the `diversion` and `divertedFromShipmentId` parameter, it will automatically
         inherit the primeActualWeight of its `divertedFromShipmentId` parent. Payment requests created on a diverted shipment "chain" will utilize
         the lowest weight possible in the chain to prevent overcharging as they are still separate shipments.
-
-        **NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
-        secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
-        destinationPostalCode and secondaryDestinationPostalCode].
 
         **WIP**: The Prime should be notified by a push notification whenever the TOO approves a shipment connected to
         one of their moves. Otherwise, the Prime can fetch the related move using the
@@ -158,10 +150,6 @@ paths:
         These restrictions are due to our [optimistic locking/concurrency control](https://transcom.github.io/mymove-docs/docs/dev/contributing/backend/use-optimistic-locking) mechanism.
 
         Note that some fields cannot be manually changed but will still be updated automatically, such as `primeEstimatedWeightRecordedDate` and `requiredDeliveryDate`.
-
-        **NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
-        secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
-        destinationPostalCode and secondaryDestinationPostalCode].
       operationId: updateMTOShipment
       parameters:
       - description: UUID of the shipment being updated.
@@ -604,11 +592,23 @@ components:
           description: The address of the origin location where goods are being moved
             from.
           type: object
+        secondaryPickupAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: An optional secondary pickup location address near the origin
+            where additional goods exist.
+          type: object
         destinationAddress:
           allOf:
           - $ref: '#/components/schemas/Address'
           description: The address of the destination location where goods are being
             delivered to.
+          type: object
+        secondaryDestinationAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: An optional secondary address near the destination where goods
+            will be dropped off.
           type: object
         sitExpected:
           description: |
@@ -658,9 +658,11 @@ components:
           nullable: true
           type: integer
       required:
+      - destinationAddress
       - estimatedWeight
       - expectedDepartureDate
       - hasProGear
+      - pickupAddress
       - sitExpected
       type: object
     MTOShipment:
@@ -845,6 +847,38 @@ components:
           format: date
           nullable: true
           type: string
+        pickupAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: |
+            The address of the origin location where goods are being moved from.
+          type: object
+        hasSecondaryPickupAddress:
+          nullable: true
+          type: boolean
+          x-omitempty: false
+        secondaryPickupAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: |
+            An optional secondary pickup location near the origin where additional goods exist.
+          type: object
+        destinationAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: |
+            The address of the destination location where goods are being delivered to.
+          type: object
+        hasSecondaryDestinationAddress:
+          nullable: true
+          type: boolean
+          x-omitempty: false
+        secondaryDestinationAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: |
+            An optional secondary address near the destination where goods will be dropped off.
+          type: object
         sitExpected:
           description: |
             Captures whether some or all of the PPM shipment will require temporary storage at the origin or destination.
@@ -896,6 +930,16 @@ components:
       type: object
     UpdateMTOShipment:
       properties:
+        actualProGearWeight:
+          description: The actual weight of any pro gear shipped during a move.
+          example: 4500
+          nullable: true
+          type: integer
+        actualSpouseProGearWeight:
+          description: The actual weight of any pro gear shipped during a move.
+          example: 4500
+          nullable: true
+          type: integer
         scheduledPickupDate:
           description: The date the Prime contractor scheduled to pick up this shipment
             after consultation with the customer.
@@ -999,14 +1043,6 @@ components:
           example: counselor approved
           nullable: true
           type: string
-        actualProGearWeight:
-          nullable: true
-          type: integer
-          x-omitempty: false
-        actualSpouseProGearWeight:
-          nullable: true
-          type: integer
-          x-omitempty: false
         ppmShipment:
           $ref: '#/components/schemas/UpdatePPMShipment'
       type: object
@@ -2559,13 +2595,35 @@ components:
       description: A personally procured move is a type of shipment that a service
         member moves themselves.
       example:
+        secondaryPickupAddress:
+          country: USA
+          city: Anytown
+          postalCode: "90210"
+          streetAddress1: 123 Main Ave
+          county: LOS ANGELES
+          streetAddress2: Apartment 9000
+          streetAddress3: Montmârtre
+          eTag: eTag
+          id: c56a4180-65aa-42ec-a945-5fd21dec0538
+          state: AL
+        destinationAddress:
+          country: USA
+          city: Anytown
+          postalCode: "90210"
+          streetAddress1: 123 Main Ave
+          county: LOS ANGELES
+          streetAddress2: Apartment 9000
+          streetAddress3: Montmârtre
+          eTag: eTag
+          id: c56a4180-65aa-42ec-a945-5fd21dec0538
+          state: AL
         hasProGear: true
         actualMoveDate: 2000-01-23
         reviewedAt: 2000-01-23T04:56:07.000+00:00
-        sitEstimatedCost: 2
+        sitEstimatedCost: 9
         createdAt: 2000-01-23T04:56:07.000+00:00
-        estimatedIncentive: 7
-        advanceAmountRequested: 9
+        estimatedIncentive: 5
+        advanceAmountRequested: 2
         sitEstimatedWeight: 2000
         hasRequestedAdvance: true
         eTag: eTag
@@ -2574,17 +2632,41 @@ components:
         updatedAt: 2000-01-23T04:56:07.000+00:00
         actualPickupPostalCode: "90210"
         sitExpected: true
-        advanceAmountReceived: 3
+        advanceAmountReceived: 7
         approvedAt: 2000-01-23T04:56:07.000+00:00
         sitEstimatedDepartureDate: 2000-01-23
         expectedDepartureDate: 2000-01-23
-        proGearWeight: 5
+        hasSecondaryPickupAddress: true
+        proGearWeight: 1
+        secondaryDestinationAddress:
+          country: USA
+          city: Anytown
+          postalCode: "90210"
+          streetAddress1: 123 Main Ave
+          county: LOS ANGELES
+          streetAddress2: Apartment 9000
+          streetAddress3: Montmârtre
+          eTag: eTag
+          id: c56a4180-65aa-42ec-a945-5fd21dec0538
+          state: AL
         hasReceivedAdvance: true
         estimatedWeight: 4200
+        pickupAddress:
+          country: USA
+          city: Anytown
+          postalCode: "90210"
+          streetAddress1: 123 Main Ave
+          county: LOS ANGELES
+          streetAddress2: Apartment 9000
+          streetAddress3: Montmârtre
+          eTag: eTag
+          id: c56a4180-65aa-42ec-a945-5fd21dec0538
+          state: AL
         shipmentId: 1f2270c7-7166-40ae-981e-b200ebdf3054
+        hasSecondaryDestinationAddress: true
         sitLocation: "{}"
         sitEstimatedEntryDate: 2000-01-23
-        spouseProGearWeight: 2
+        spouseProGearWeight: 5
         status: DRAFT
         actualDestinationPostalCode: "90210"
       nullable: true
@@ -2646,6 +2728,14 @@ components:
           nullable: true
           type: string
           x-omitempty: false
+        pickupAddress:
+          $ref: '#/components/schemas/Address'
+        secondaryPickupAddress:
+          $ref: '#/components/schemas/Address'
+        hasSecondaryPickupAddress:
+          nullable: true
+          type: boolean
+          x-omitempty: false
         actualPickupPostalCode:
           description: |
             The actual postal code where the PPM shipment started. To be filled once the customer has moved the shipment.
@@ -2655,6 +2745,14 @@ components:
           pattern: "^(\\d{5})$"
           title: ZIP
           type: string
+          x-omitempty: false
+        destinationAddress:
+          $ref: '#/components/schemas/Address'
+        secondaryDestinationAddress:
+          $ref: '#/components/schemas/Address'
+        hasSecondaryDestinationAddress:
+          nullable: true
+          type: boolean
           x-omitempty: false
         actualDestinationPostalCode:
           description: |
@@ -2773,9 +2871,11 @@ components:
           type: string
       required:
       - createdAt
+      - destinationAddress
       - eTag
       - expectedDepartureDate
       - id
+      - pickupAddress
       - shipmentId
       - sitExpected
       - status
@@ -2918,13 +3018,35 @@ components:
           updatedAt: 2000-01-23T04:56:07.000+00:00
         secondaryDeliveryAddress: "{}"
         ppmShipment:
+          secondaryPickupAddress:
+            country: USA
+            city: Anytown
+            postalCode: "90210"
+            streetAddress1: 123 Main Ave
+            county: LOS ANGELES
+            streetAddress2: Apartment 9000
+            streetAddress3: Montmârtre
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            state: AL
+          destinationAddress:
+            country: USA
+            city: Anytown
+            postalCode: "90210"
+            streetAddress1: 123 Main Ave
+            county: LOS ANGELES
+            streetAddress2: Apartment 9000
+            streetAddress3: Montmârtre
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            state: AL
           hasProGear: true
           actualMoveDate: 2000-01-23
           reviewedAt: 2000-01-23T04:56:07.000+00:00
-          sitEstimatedCost: 2
+          sitEstimatedCost: 9
           createdAt: 2000-01-23T04:56:07.000+00:00
-          estimatedIncentive: 7
-          advanceAmountRequested: 9
+          estimatedIncentive: 5
+          advanceAmountRequested: 2
           sitEstimatedWeight: 2000
           hasRequestedAdvance: true
           eTag: eTag
@@ -2933,17 +3055,41 @@ components:
           updatedAt: 2000-01-23T04:56:07.000+00:00
           actualPickupPostalCode: "90210"
           sitExpected: true
-          advanceAmountReceived: 3
+          advanceAmountReceived: 7
           approvedAt: 2000-01-23T04:56:07.000+00:00
           sitEstimatedDepartureDate: 2000-01-23
           expectedDepartureDate: 2000-01-23
-          proGearWeight: 5
+          hasSecondaryPickupAddress: true
+          proGearWeight: 1
+          secondaryDestinationAddress:
+            country: USA
+            city: Anytown
+            postalCode: "90210"
+            streetAddress1: 123 Main Ave
+            county: LOS ANGELES
+            streetAddress2: Apartment 9000
+            streetAddress3: Montmârtre
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            state: AL
           hasReceivedAdvance: true
           estimatedWeight: 4200
+          pickupAddress:
+            country: USA
+            city: Anytown
+            postalCode: "90210"
+            streetAddress1: 123 Main Ave
+            county: LOS ANGELES
+            streetAddress2: Apartment 9000
+            streetAddress3: Montmârtre
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            state: AL
           shipmentId: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          hasSecondaryDestinationAddress: true
           sitLocation: "{}"
           sitEstimatedEntryDate: 2000-01-23
-          spouseProGearWeight: 2
+          spouseProGearWeight: 5
           status: DRAFT
           actualDestinationPostalCode: "90210"
         moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
@@ -3024,7 +3170,6 @@ components:
         updatedAt: 2000-01-23T04:56:07.000+00:00
         pointOfContact: pointOfContact
         actualDeliveryDate: 2000-01-23
-        actualSpouseProGearWeight: 5
         actualPickupDate: 2000-01-23
         primeActualWeight: 4500
         agents:
@@ -3050,7 +3195,6 @@ components:
           updatedAt: 2000-01-23T04:56:07.000+00:00
         approvedDate: 2000-01-23
         requiredDeliveryDate: 2000-01-23
-        actualProGearWeight: 1
         reweigh:
           requestedBy: CUSTOMER
           createdAt: 2000-01-23T04:56:07.000+00:00
@@ -3206,18 +3350,6 @@ components:
           nullable: true
           readOnly: true
           type: string
-        actualProGearWeight:
-          description: |
-            The actual weight of any pro gear being shipped.
-          nullable: true
-          type: integer
-          x-omitempty: false
-        actualSpouseProGearWeight:
-          description: |
-            The actual weight of any spouse pro gear being shipped.
-          nullable: true
-          type: integer
-          x-omitempty: false
         agents:
           description: |
             A list of the agents for a shipment. Agents are the people who the Prime contractor recognize as permitted to release (in the case of pickup) or receive (on delivery) a shipment.
@@ -3544,13 +3676,35 @@ components:
             updatedAt: 2000-01-23T04:56:07.000+00:00
           secondaryDeliveryAddress: "{}"
           ppmShipment:
+            secondaryPickupAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            destinationAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
             hasProGear: true
             actualMoveDate: 2000-01-23
             reviewedAt: 2000-01-23T04:56:07.000+00:00
-            sitEstimatedCost: 2
+            sitEstimatedCost: 9
             createdAt: 2000-01-23T04:56:07.000+00:00
-            estimatedIncentive: 7
-            advanceAmountRequested: 9
+            estimatedIncentive: 5
+            advanceAmountRequested: 2
             sitEstimatedWeight: 2000
             hasRequestedAdvance: true
             eTag: eTag
@@ -3559,17 +3713,41 @@ components:
             updatedAt: 2000-01-23T04:56:07.000+00:00
             actualPickupPostalCode: "90210"
             sitExpected: true
-            advanceAmountReceived: 3
+            advanceAmountReceived: 7
             approvedAt: 2000-01-23T04:56:07.000+00:00
             sitEstimatedDepartureDate: 2000-01-23
             expectedDepartureDate: 2000-01-23
-            proGearWeight: 5
+            hasSecondaryPickupAddress: true
+            proGearWeight: 1
+            secondaryDestinationAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
             hasReceivedAdvance: true
             estimatedWeight: 4200
+            pickupAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
             shipmentId: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            hasSecondaryDestinationAddress: true
             sitLocation: "{}"
             sitEstimatedEntryDate: 2000-01-23
-            spouseProGearWeight: 2
+            spouseProGearWeight: 5
             status: DRAFT
             actualDestinationPostalCode: "90210"
           moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
@@ -3650,7 +3828,6 @@ components:
           updatedAt: 2000-01-23T04:56:07.000+00:00
           pointOfContact: pointOfContact
           actualDeliveryDate: 2000-01-23
-          actualSpouseProGearWeight: 5
           actualPickupDate: 2000-01-23
           primeActualWeight: 4500
           agents:
@@ -3676,7 +3853,6 @@ components:
             updatedAt: 2000-01-23T04:56:07.000+00:00
           approvedDate: 2000-01-23
           requiredDeliveryDate: 2000-01-23
-          actualProGearWeight: 1
           reweigh:
             requestedBy: CUSTOMER
             createdAt: 2000-01-23T04:56:07.000+00:00
@@ -3726,13 +3902,35 @@ components:
             updatedAt: 2000-01-23T04:56:07.000+00:00
           secondaryDeliveryAddress: "{}"
           ppmShipment:
+            secondaryPickupAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            destinationAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
             hasProGear: true
             actualMoveDate: 2000-01-23
             reviewedAt: 2000-01-23T04:56:07.000+00:00
-            sitEstimatedCost: 2
+            sitEstimatedCost: 9
             createdAt: 2000-01-23T04:56:07.000+00:00
-            estimatedIncentive: 7
-            advanceAmountRequested: 9
+            estimatedIncentive: 5
+            advanceAmountRequested: 2
             sitEstimatedWeight: 2000
             hasRequestedAdvance: true
             eTag: eTag
@@ -3741,17 +3939,41 @@ components:
             updatedAt: 2000-01-23T04:56:07.000+00:00
             actualPickupPostalCode: "90210"
             sitExpected: true
-            advanceAmountReceived: 3
+            advanceAmountReceived: 7
             approvedAt: 2000-01-23T04:56:07.000+00:00
             sitEstimatedDepartureDate: 2000-01-23
             expectedDepartureDate: 2000-01-23
-            proGearWeight: 5
+            hasSecondaryPickupAddress: true
+            proGearWeight: 1
+            secondaryDestinationAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
             hasReceivedAdvance: true
             estimatedWeight: 4200
+            pickupAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
             shipmentId: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            hasSecondaryDestinationAddress: true
             sitLocation: "{}"
             sitEstimatedEntryDate: 2000-01-23
-            spouseProGearWeight: 2
+            spouseProGearWeight: 5
             status: DRAFT
             actualDestinationPostalCode: "90210"
           moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
@@ -3832,7 +4054,6 @@ components:
           updatedAt: 2000-01-23T04:56:07.000+00:00
           pointOfContact: pointOfContact
           actualDeliveryDate: 2000-01-23
-          actualSpouseProGearWeight: 5
           actualPickupDate: 2000-01-23
           primeActualWeight: 4500
           agents:
@@ -3858,7 +4079,6 @@ components:
             updatedAt: 2000-01-23T04:56:07.000+00:00
           approvedDate: 2000-01-23
           requiredDeliveryDate: 2000-01-23
-          actualProGearWeight: 1
           reweigh:
             requestedBy: CUSTOMER
             createdAt: 2000-01-23T04:56:07.000+00:00
@@ -3967,7 +4187,7 @@ components:
           modelType: MTOServiceItemBasic
           rejectionReason: item was too heavy
           status: SUBMITTED
-        ppmEstimatedWeight: 4
+        ppmEstimatedWeight: 3
         eTag: eTag
         id: a502b4f1-b9c4-4faf-8bdd-68292501bf26
         availableToPrimeAt: 2000-01-23T04:56:07.000+00:00

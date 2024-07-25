@@ -1,6 +1,6 @@
 # \MtoShipmentAPI
 
-All URIs are relative to */prime/v2*
+All URIs are relative to */prime/v3*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 ## CreateMTOShipment
 
-> MTOShipmentV2V2 CreateMTOShipment(ctx).Body(body).Execute()
+> MTOShipmentV3V3 CreateMTOShipment(ctx).Body(body).Execute()
 
 createMTOShipment
 
@@ -30,7 +30,7 @@ import (
 )
 
 func main() {
-	body := *openapiclient.NewCreateMTOShipmentV2("1f2270c7-7166-40ae-981e-b200ebdf3054", "TODO") // CreateMTOShipmentV2 |  (optional)
+	body := *openapiclient.NewCreateMTOShipmentV3("1f2270c7-7166-40ae-981e-b200ebdf3054", "TODO") // CreateMTOShipmentV3 |  (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -39,7 +39,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `MtoShipmentAPI.CreateMTOShipment``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `CreateMTOShipment`: MTOShipmentV2V2
+	// response from `CreateMTOShipment`: MTOShipmentV3V3
 	fmt.Fprintf(os.Stdout, "Response from `MtoShipmentAPI.CreateMTOShipment`: %v\n", resp)
 }
 ```
@@ -55,11 +55,11 @@ Other parameters are passed through a pointer to a apiCreateMTOShipmentRequest s
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**CreateMTOShipmentV2**](CreateMTOShipmentV2.md) |  | 
+ **body** | [**CreateMTOShipmentV3**](CreateMTOShipmentV3.md) |  | 
 
 ### Return type
 
-[**MTOShipmentV2V2**](MTOShipmentV2.md)
+[**MTOShipmentV3V3**](MTOShipmentV3.md)
 
 ### Authorization
 
@@ -77,7 +77,7 @@ No authorization required
 
 ## UpdateMTOShipment
 
-> MTOShipmentV2V2 UpdateMTOShipment(ctx, mtoShipmentID).IfMatch(ifMatch).Body(body).Execute()
+> MTOShipmentV3V3 UpdateMTOShipment(ctx, mtoShipmentID).IfMatch(ifMatch).Body(body).Execute()
 
 updateMTOShipment
 
@@ -98,7 +98,7 @@ import (
 func main() {
 	mtoShipmentID := "38400000-8cf0-11bd-b23e-10b96e4ef00d" // string | UUID of the shipment being updated.
 	ifMatch := "ifMatch_example" // string | Optimistic locking is implemented via the `If-Match` header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a `412 Precondition Failed` error. 
-	body := *openapiclient.NewUpdateMTOShipmentV2() // UpdateMTOShipmentV2 | 
+	body := *openapiclient.NewUpdateMTOShipmentV3() // UpdateMTOShipmentV3 | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -107,7 +107,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `MtoShipmentAPI.UpdateMTOShipment``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `UpdateMTOShipment`: MTOShipmentV2V2
+	// response from `UpdateMTOShipment`: MTOShipmentV3V3
 	fmt.Fprintf(os.Stdout, "Response from `MtoShipmentAPI.UpdateMTOShipment`: %v\n", resp)
 }
 ```
@@ -129,11 +129,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
  **ifMatch** | **string** | Optimistic locking is implemented via the &#x60;If-Match&#x60; header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a &#x60;412 Precondition Failed&#x60; error.  | 
- **body** | [**UpdateMTOShipmentV2**](UpdateMTOShipmentV2.md) |  | 
+ **body** | [**UpdateMTOShipmentV3**](UpdateMTOShipmentV3.md) |  | 
 
 ### Return type
 
-[**MTOShipmentV2V2**](MTOShipmentV2.md)
+[**MTOShipmentV3V3**](MTOShipmentV3.md)
 
 ### Authorization
 

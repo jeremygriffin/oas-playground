@@ -1,0 +1,434 @@
+# EntitlementsV3
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**Id** | Pointer to **string** |  | [optional] 
+**AuthorizedWeight** | Pointer to **NullableInt32** |  | [optional] 
+**DependentsAuthorized** | Pointer to **NullableBool** |  | [optional] 
+**GunSafe** | Pointer to **bool** |  | [optional] 
+**NonTemporaryStorage** | Pointer to **NullableBool** |  | [optional] 
+**PrivatelyOwnedVehicle** | Pointer to **NullableBool** |  | [optional] 
+**ProGearWeight** | Pointer to **int32** |  | [optional] 
+**ProGearWeightSpouse** | Pointer to **int32** |  | [optional] 
+**RequiredMedicalEquipmentWeight** | Pointer to **int32** |  | [optional] 
+**OrganizationalClothingAndIndividualEquipment** | Pointer to **bool** |  | [optional] 
+**StorageInTransit** | Pointer to **int32** |  | [optional] 
+**TotalWeight** | Pointer to **int32** |  | [optional] 
+**TotalDependents** | Pointer to **int32** |  | [optional] 
+**ETag** | Pointer to **string** |  | [optional] [readonly] 
+
+## Methods
+
+### NewEntitlementsV3
+
+`func NewEntitlementsV3() *EntitlementsV3`
+
+NewEntitlementsV3 instantiates a new EntitlementsV3 object
+This constructor will assign default values to properties that have it defined,
+and makes sure properties required by API are set, but the set of arguments
+will change when the set of required properties is changed
+
+### NewEntitlementsV3WithDefaults
+
+`func NewEntitlementsV3WithDefaults() *EntitlementsV3`
+
+NewEntitlementsV3WithDefaults instantiates a new EntitlementsV3 object
+This constructor will only assign default values to properties that have it defined,
+but it doesn't guarantee that properties required by API are set
+
+### GetId
+
+`func (o *EntitlementsV3) GetId() string`
+
+GetId returns the Id field if non-nil, zero value otherwise.
+
+### GetIdOk
+
+`func (o *EntitlementsV3) GetIdOk() (*string, bool)`
+
+GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetId
+
+`func (o *EntitlementsV3) SetId(v string)`
+
+SetId sets Id field to given value.
+
+### HasId
+
+`func (o *EntitlementsV3) HasId() bool`
+
+HasId returns a boolean if a field has been set.
+
+### GetAuthorizedWeight
+
+`func (o *EntitlementsV3) GetAuthorizedWeight() int32`
+
+GetAuthorizedWeight returns the AuthorizedWeight field if non-nil, zero value otherwise.
+
+### GetAuthorizedWeightOk
+
+`func (o *EntitlementsV3) GetAuthorizedWeightOk() (*int32, bool)`
+
+GetAuthorizedWeightOk returns a tuple with the AuthorizedWeight field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetAuthorizedWeight
+
+`func (o *EntitlementsV3) SetAuthorizedWeight(v int32)`
+
+SetAuthorizedWeight sets AuthorizedWeight field to given value.
+
+### HasAuthorizedWeight
+
+`func (o *EntitlementsV3) HasAuthorizedWeight() bool`
+
+HasAuthorizedWeight returns a boolean if a field has been set.
+
+### SetAuthorizedWeightNil
+
+`func (o *EntitlementsV3) SetAuthorizedWeightNil(b bool)`
+
+ SetAuthorizedWeightNil sets the value for AuthorizedWeight to be an explicit nil
+
+### UnsetAuthorizedWeight
+`func (o *EntitlementsV3) UnsetAuthorizedWeight()`
+
+UnsetAuthorizedWeight ensures that no value is present for AuthorizedWeight, not even an explicit nil
+### GetDependentsAuthorized
+
+`func (o *EntitlementsV3) GetDependentsAuthorized() bool`
+
+GetDependentsAuthorized returns the DependentsAuthorized field if non-nil, zero value otherwise.
+
+### GetDependentsAuthorizedOk
+
+`func (o *EntitlementsV3) GetDependentsAuthorizedOk() (*bool, bool)`
+
+GetDependentsAuthorizedOk returns a tuple with the DependentsAuthorized field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetDependentsAuthorized
+
+`func (o *EntitlementsV3) SetDependentsAuthorized(v bool)`
+
+SetDependentsAuthorized sets DependentsAuthorized field to given value.
+
+### HasDependentsAuthorized
+
+`func (o *EntitlementsV3) HasDependentsAuthorized() bool`
+
+HasDependentsAuthorized returns a boolean if a field has been set.
+
+### SetDependentsAuthorizedNil
+
+`func (o *EntitlementsV3) SetDependentsAuthorizedNil(b bool)`
+
+ SetDependentsAuthorizedNil sets the value for DependentsAuthorized to be an explicit nil
+
+### UnsetDependentsAuthorized
+`func (o *EntitlementsV3) UnsetDependentsAuthorized()`
+
+UnsetDependentsAuthorized ensures that no value is present for DependentsAuthorized, not even an explicit nil
+### GetGunSafe
+
+`func (o *EntitlementsV3) GetGunSafe() bool`
+
+GetGunSafe returns the GunSafe field if non-nil, zero value otherwise.
+
+### GetGunSafeOk
+
+`func (o *EntitlementsV3) GetGunSafeOk() (*bool, bool)`
+
+GetGunSafeOk returns a tuple with the GunSafe field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetGunSafe
+
+`func (o *EntitlementsV3) SetGunSafe(v bool)`
+
+SetGunSafe sets GunSafe field to given value.
+
+### HasGunSafe
+
+`func (o *EntitlementsV3) HasGunSafe() bool`
+
+HasGunSafe returns a boolean if a field has been set.
+
+### GetNonTemporaryStorage
+
+`func (o *EntitlementsV3) GetNonTemporaryStorage() bool`
+
+GetNonTemporaryStorage returns the NonTemporaryStorage field if non-nil, zero value otherwise.
+
+### GetNonTemporaryStorageOk
+
+`func (o *EntitlementsV3) GetNonTemporaryStorageOk() (*bool, bool)`
+
+GetNonTemporaryStorageOk returns a tuple with the NonTemporaryStorage field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetNonTemporaryStorage
+
+`func (o *EntitlementsV3) SetNonTemporaryStorage(v bool)`
+
+SetNonTemporaryStorage sets NonTemporaryStorage field to given value.
+
+### HasNonTemporaryStorage
+
+`func (o *EntitlementsV3) HasNonTemporaryStorage() bool`
+
+HasNonTemporaryStorage returns a boolean if a field has been set.
+
+### SetNonTemporaryStorageNil
+
+`func (o *EntitlementsV3) SetNonTemporaryStorageNil(b bool)`
+
+ SetNonTemporaryStorageNil sets the value for NonTemporaryStorage to be an explicit nil
+
+### UnsetNonTemporaryStorage
+`func (o *EntitlementsV3) UnsetNonTemporaryStorage()`
+
+UnsetNonTemporaryStorage ensures that no value is present for NonTemporaryStorage, not even an explicit nil
+### GetPrivatelyOwnedVehicle
+
+`func (o *EntitlementsV3) GetPrivatelyOwnedVehicle() bool`
+
+GetPrivatelyOwnedVehicle returns the PrivatelyOwnedVehicle field if non-nil, zero value otherwise.
+
+### GetPrivatelyOwnedVehicleOk
+
+`func (o *EntitlementsV3) GetPrivatelyOwnedVehicleOk() (*bool, bool)`
+
+GetPrivatelyOwnedVehicleOk returns a tuple with the PrivatelyOwnedVehicle field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetPrivatelyOwnedVehicle
+
+`func (o *EntitlementsV3) SetPrivatelyOwnedVehicle(v bool)`
+
+SetPrivatelyOwnedVehicle sets PrivatelyOwnedVehicle field to given value.
+
+### HasPrivatelyOwnedVehicle
+
+`func (o *EntitlementsV3) HasPrivatelyOwnedVehicle() bool`
+
+HasPrivatelyOwnedVehicle returns a boolean if a field has been set.
+
+### SetPrivatelyOwnedVehicleNil
+
+`func (o *EntitlementsV3) SetPrivatelyOwnedVehicleNil(b bool)`
+
+ SetPrivatelyOwnedVehicleNil sets the value for PrivatelyOwnedVehicle to be an explicit nil
+
+### UnsetPrivatelyOwnedVehicle
+`func (o *EntitlementsV3) UnsetPrivatelyOwnedVehicle()`
+
+UnsetPrivatelyOwnedVehicle ensures that no value is present for PrivatelyOwnedVehicle, not even an explicit nil
+### GetProGearWeight
+
+`func (o *EntitlementsV3) GetProGearWeight() int32`
+
+GetProGearWeight returns the ProGearWeight field if non-nil, zero value otherwise.
+
+### GetProGearWeightOk
+
+`func (o *EntitlementsV3) GetProGearWeightOk() (*int32, bool)`
+
+GetProGearWeightOk returns a tuple with the ProGearWeight field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetProGearWeight
+
+`func (o *EntitlementsV3) SetProGearWeight(v int32)`
+
+SetProGearWeight sets ProGearWeight field to given value.
+
+### HasProGearWeight
+
+`func (o *EntitlementsV3) HasProGearWeight() bool`
+
+HasProGearWeight returns a boolean if a field has been set.
+
+### GetProGearWeightSpouse
+
+`func (o *EntitlementsV3) GetProGearWeightSpouse() int32`
+
+GetProGearWeightSpouse returns the ProGearWeightSpouse field if non-nil, zero value otherwise.
+
+### GetProGearWeightSpouseOk
+
+`func (o *EntitlementsV3) GetProGearWeightSpouseOk() (*int32, bool)`
+
+GetProGearWeightSpouseOk returns a tuple with the ProGearWeightSpouse field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetProGearWeightSpouse
+
+`func (o *EntitlementsV3) SetProGearWeightSpouse(v int32)`
+
+SetProGearWeightSpouse sets ProGearWeightSpouse field to given value.
+
+### HasProGearWeightSpouse
+
+`func (o *EntitlementsV3) HasProGearWeightSpouse() bool`
+
+HasProGearWeightSpouse returns a boolean if a field has been set.
+
+### GetRequiredMedicalEquipmentWeight
+
+`func (o *EntitlementsV3) GetRequiredMedicalEquipmentWeight() int32`
+
+GetRequiredMedicalEquipmentWeight returns the RequiredMedicalEquipmentWeight field if non-nil, zero value otherwise.
+
+### GetRequiredMedicalEquipmentWeightOk
+
+`func (o *EntitlementsV3) GetRequiredMedicalEquipmentWeightOk() (*int32, bool)`
+
+GetRequiredMedicalEquipmentWeightOk returns a tuple with the RequiredMedicalEquipmentWeight field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetRequiredMedicalEquipmentWeight
+
+`func (o *EntitlementsV3) SetRequiredMedicalEquipmentWeight(v int32)`
+
+SetRequiredMedicalEquipmentWeight sets RequiredMedicalEquipmentWeight field to given value.
+
+### HasRequiredMedicalEquipmentWeight
+
+`func (o *EntitlementsV3) HasRequiredMedicalEquipmentWeight() bool`
+
+HasRequiredMedicalEquipmentWeight returns a boolean if a field has been set.
+
+### GetOrganizationalClothingAndIndividualEquipment
+
+`func (o *EntitlementsV3) GetOrganizationalClothingAndIndividualEquipment() bool`
+
+GetOrganizationalClothingAndIndividualEquipment returns the OrganizationalClothingAndIndividualEquipment field if non-nil, zero value otherwise.
+
+### GetOrganizationalClothingAndIndividualEquipmentOk
+
+`func (o *EntitlementsV3) GetOrganizationalClothingAndIndividualEquipmentOk() (*bool, bool)`
+
+GetOrganizationalClothingAndIndividualEquipmentOk returns a tuple with the OrganizationalClothingAndIndividualEquipment field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetOrganizationalClothingAndIndividualEquipment
+
+`func (o *EntitlementsV3) SetOrganizationalClothingAndIndividualEquipment(v bool)`
+
+SetOrganizationalClothingAndIndividualEquipment sets OrganizationalClothingAndIndividualEquipment field to given value.
+
+### HasOrganizationalClothingAndIndividualEquipment
+
+`func (o *EntitlementsV3) HasOrganizationalClothingAndIndividualEquipment() bool`
+
+HasOrganizationalClothingAndIndividualEquipment returns a boolean if a field has been set.
+
+### GetStorageInTransit
+
+`func (o *EntitlementsV3) GetStorageInTransit() int32`
+
+GetStorageInTransit returns the StorageInTransit field if non-nil, zero value otherwise.
+
+### GetStorageInTransitOk
+
+`func (o *EntitlementsV3) GetStorageInTransitOk() (*int32, bool)`
+
+GetStorageInTransitOk returns a tuple with the StorageInTransit field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetStorageInTransit
+
+`func (o *EntitlementsV3) SetStorageInTransit(v int32)`
+
+SetStorageInTransit sets StorageInTransit field to given value.
+
+### HasStorageInTransit
+
+`func (o *EntitlementsV3) HasStorageInTransit() bool`
+
+HasStorageInTransit returns a boolean if a field has been set.
+
+### GetTotalWeight
+
+`func (o *EntitlementsV3) GetTotalWeight() int32`
+
+GetTotalWeight returns the TotalWeight field if non-nil, zero value otherwise.
+
+### GetTotalWeightOk
+
+`func (o *EntitlementsV3) GetTotalWeightOk() (*int32, bool)`
+
+GetTotalWeightOk returns a tuple with the TotalWeight field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTotalWeight
+
+`func (o *EntitlementsV3) SetTotalWeight(v int32)`
+
+SetTotalWeight sets TotalWeight field to given value.
+
+### HasTotalWeight
+
+`func (o *EntitlementsV3) HasTotalWeight() bool`
+
+HasTotalWeight returns a boolean if a field has been set.
+
+### GetTotalDependents
+
+`func (o *EntitlementsV3) GetTotalDependents() int32`
+
+GetTotalDependents returns the TotalDependents field if non-nil, zero value otherwise.
+
+### GetTotalDependentsOk
+
+`func (o *EntitlementsV3) GetTotalDependentsOk() (*int32, bool)`
+
+GetTotalDependentsOk returns a tuple with the TotalDependents field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTotalDependents
+
+`func (o *EntitlementsV3) SetTotalDependents(v int32)`
+
+SetTotalDependents sets TotalDependents field to given value.
+
+### HasTotalDependents
+
+`func (o *EntitlementsV3) HasTotalDependents() bool`
+
+HasTotalDependents returns a boolean if a field has been set.
+
+### GetETag
+
+`func (o *EntitlementsV3) GetETag() string`
+
+GetETag returns the ETag field if non-nil, zero value otherwise.
+
+### GetETagOk
+
+`func (o *EntitlementsV3) GetETagOk() (*string, bool)`
+
+GetETagOk returns a tuple with the ETag field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetETag
+
+`func (o *EntitlementsV3) SetETag(v string)`
+
+SetETag sets ETag field to given value.
+
+### HasETag
+
+`func (o *EntitlementsV3) HasETag() bool`
+
+HasETag returns a boolean if a field has been set.
+
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+
