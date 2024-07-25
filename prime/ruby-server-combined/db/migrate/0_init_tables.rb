@@ -1,7 +1,7 @@
 =begin
-MilMove Prime API
+MilMove Prime V2 API
 
-The Prime API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v1/`. 
+The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
 
 The version of the OpenAPI document: 0.0.1
 Contact: milmove-developers@caci.com
@@ -26,13 +26,6 @@ class InitTables < ActiveRecord::Migration
       t.timestamps
     end
 
-    create_table "amendments".pluralize.to_sym, id: false do |t|
-      t.integer :total
-      t.integer :available_since
-
-      t.timestamps
-    end
-
     create_table "client_error".pluralize.to_sym, id: false do |t|
       t.string :title
       t.string :detail
@@ -52,6 +45,7 @@ class InitTables < ActiveRecord::Migration
       t.string :destination_address
       t.string :shipment_type
       t.boolean :diversion
+      t.String :diverted_from_shipment_id
       t.string :point_of_contact
       t.string :counselor_remarks
       t.string :ppm_shipment
@@ -72,15 +66,6 @@ class InitTables < ActiveRecord::Migration
       t.boolean :has_pro_gear
       t.integer :pro_gear_weight
       t.integer :spouse_pro_gear_weight
-
-      t.timestamps
-    end
-
-    create_table "create_payment_request".pluralize.to_sym, id: false do |t|
-      t.boolean :is_final
-      t.String :move_task_order_id
-      t.string :service_items
-      t.string :point_of_contact
 
       t.timestamps
     end
@@ -155,37 +140,6 @@ class InitTables < ActiveRecord::Migration
       t.string :title
       t.string :detail
       t.String :instance
-
-      t.timestamps
-    end
-
-    create_table "excess_weight_record".pluralize.to_sym, id: false do |t|
-      t.String :id
-      t.String :url
-      t.string :filename
-      t.string :content_type
-      t.integer :bytes
-      t.string :status
-      t.datetime :created_at
-      t.datetime :updated_at
-      t.String :move_id
-      t.datetime :move_excess_weight_qualified_at
-      t.datetime :move_excess_weight_acknowledged_at
-
-      t.timestamps
-    end
-
-    create_table "list_move".pluralize.to_sym, id: false do |t|
-      t.String :id
-      t.string :move_code
-      t.datetime :created_at
-      t.String :order_id
-      t.string :reference_id
-      t.datetime :available_to_prime_at
-      t.datetime :updated_at
-      t.string :ppm_type
-      t.string :e_tag
-      t.string :amendments
 
       t.timestamps
     end
@@ -462,6 +416,7 @@ class InitTables < ActiveRecord::Migration
       t.datetime :excess_weight_qualified_at
       t.datetime :excess_weight_acknowledged_at
       t.String :excess_weight_upload_id
+      t.string :contract_number
       t.string :e_tag
 
       t.timestamps
@@ -480,6 +435,10 @@ class InitTables < ActiveRecord::Migration
       t.string :orders_type
       t.string :order_number
       t.string :lines_of_accounting
+      t.string :supply_and_services_cost_estimate
+      t.string :packing_and_shipping_instructions
+      t.string :method_of_payment
+      t.string :naics
       t.string :e_tag
 
       t.timestamps
@@ -632,14 +591,6 @@ class InitTables < ActiveRecord::Migration
       t.timestamps
     end
 
-    create_table "service_item".pluralize.to_sym, id: false do |t|
-      t.String :id
-      t.string :params
-      t.string :e_tag
-
-      t.timestamps
-    end
-
     create_table "service_item_param_name".pluralize.to_sym, id: false do |t|
 
       t.timestamps
@@ -651,13 +602,6 @@ class InitTables < ActiveRecord::Migration
     end
 
     create_table "service_item_param_type".pluralize.to_sym, id: false do |t|
-
-      t.timestamps
-    end
-
-    create_table "service_item_params_inner".pluralize.to_sym, id: false do |t|
-      t.string :key
-      t.string :value
 
       t.timestamps
     end
@@ -768,8 +712,6 @@ class InitTables < ActiveRecord::Migration
     end
 
     create_table "update_mto_shipment".pluralize.to_sym, id: false do |t|
-      t.integer :actual_pro_gear_weight
-      t.integer :actual_spouse_pro_gear_weight
       t.Date :scheduled_pickup_date
       t.Date :actual_pickup_date
       t.Date :first_available_delivery_date
@@ -788,6 +730,8 @@ class InitTables < ActiveRecord::Migration
       t.boolean :diversion
       t.string :point_of_contact
       t.string :counselor_remarks
+      t.integer :actual_pro_gear_weight
+      t.integer :actual_spouse_pro_gear_weight
       t.string :ppm_shipment
 
       t.timestamps

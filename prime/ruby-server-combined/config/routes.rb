@@ -1,7 +1,7 @@
 =begin
-MilMove Prime API
+MilMove Prime V2 API
 
-The Prime API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v1/`. 
+The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
 
 The version of the OpenAPI document: 0.0.1
 Contact: milmove-developers@caci.com
@@ -15,25 +15,7 @@ Rails.application.routes.draw do
     match full_path, to: "#{opts.fetch(:controller_name)}##{opts[:action_name]}", via: http_method
   end
 
-  add_openapi_route 'POST', '/prime/v1/move-task-orders/{moveTaskOrderID}/excess-weight-record', controller_name: 'move_task_order', action_name: 'create_excess_weight_record'
-  add_openapi_route 'GET', '/prime/v1/moves/{locator}/documents', controller_name: 'move_task_order', action_name: 'download_move_order'
-  add_openapi_route 'GET', '/prime/v1/move-task-orders/{moveID}', controller_name: 'move_task_order', action_name: 'get_move_task_order'
-  add_openapi_route 'GET', '/prime/v1/moves', controller_name: 'move_task_order', action_name: 'list_moves'
-  add_openapi_route 'PATCH', '/prime/v1/move-task-orders/{moveTaskOrderID}/post-counseling-info', controller_name: 'move_task_order', action_name: 'update_mto_post_counseling_information'
-  add_openapi_route 'POST', '/prime/v1/mto-service-items', controller_name: 'mto_service_item', action_name: 'create_mto_service_item'
-  add_openapi_route 'POST', '/prime/v1/mto-service-items/{mtoServiceItemID}/uploads', controller_name: 'mto_service_item', action_name: 'create_service_request_document_upload'
-  add_openapi_route 'PATCH', '/prime/v1/mto-service-items/{mtoServiceItemID}', controller_name: 'mto_service_item', action_name: 'update_mto_service_item'
-  add_openapi_route 'POST', '/prime/v1/mto-shipments/{mtoShipmentID}/agents', controller_name: 'mto_shipment', action_name: 'create_mto_agent'
-  add_openapi_route 'POST', '/prime/v1/mto-shipments', controller_name: 'mto_shipment', action_name: 'create_mto_shipment'
-  add_openapi_route 'POST', '/prime/v1/mto-shipments/{mtoShipmentID}/sit-extensions', controller_name: 'mto_shipment', action_name: 'create_sit_extension'
-  add_openapi_route 'DELETE', '/prime/v1/mto-shipments/{mtoShipmentID}', controller_name: 'mto_shipment', action_name: 'delete_mto_shipment'
-  add_openapi_route 'PUT', '/prime/v1/mto-shipments/{mtoShipmentID}/agents/{agentID}', controller_name: 'mto_shipment', action_name: 'update_mto_agent'
-  add_openapi_route 'PATCH', '/prime/v1/mto-shipments/{mtoShipmentID}', controller_name: 'mto_shipment', action_name: 'update_mto_shipment'
-  add_openapi_route 'PUT', '/prime/v1/mto-shipments/{mtoShipmentID}/addresses/{addressID}', controller_name: 'mto_shipment', action_name: 'update_mto_shipment_address'
-  add_openapi_route 'PATCH', '/prime/v1/mto-shipments/{mtoShipmentID}/status', controller_name: 'mto_shipment', action_name: 'update_mto_shipment_status'
-  add_openapi_route 'PATCH', '/prime/v1/mto-shipments/{mtoShipmentID}/reweighs/{reweighID}', controller_name: 'mto_shipment', action_name: 'update_reweigh'
-  add_openapi_route 'POST', '/prime/v1/mto-shipments/{mtoShipmentID}/shipment-address-updates', controller_name: 'mto_shipment', action_name: 'update_shipment_destination_address'
-  add_openapi_route 'POST', '/prime/v1/payment-requests', controller_name: 'payment_request', action_name: 'create_payment_request'
-  add_openapi_route 'POST', '/prime/v1/payment-requests/{paymentRequestID}/uploads', controller_name: 'payment_request', action_name: 'create_upload'
-  add_openapi_route 'POST', '/prime/v1/sit-address-updates', controller_name: 'sit_address_update', action_name: 'create_sit_address_update_request'
+  add_openapi_route 'GET', '/prime/v2/move-task-orders/{moveID}', controller_name: 'move_task_order', action_name: 'get_move_task_order'
+  add_openapi_route 'POST', '/prime/v2/mto-shipments', controller_name: 'mto_shipment', action_name: 'create_mto_shipment'
+  add_openapi_route 'PATCH', '/prime/v2/mto-shipments/{mtoShipmentID}', controller_name: 'mto_shipment', action_name: 'update_mto_shipment'
 end
