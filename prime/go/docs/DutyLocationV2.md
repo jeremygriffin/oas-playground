@@ -1,0 +1,160 @@
+# DutyLocationV2
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**Id** | Pointer to **string** |  | [optional] 
+**Name** | Pointer to **string** |  | [optional] 
+**AddressID** | Pointer to **string** |  | [optional] 
+**Address** | Pointer to [**AddressV2V2**](AddressV2.md) |  | [optional] 
+**ETag** | Pointer to **string** |  | [optional] [readonly] 
+
+## Methods
+
+### NewDutyLocationV2
+
+`func NewDutyLocationV2() *DutyLocationV2`
+
+NewDutyLocationV2 instantiates a new DutyLocationV2 object
+This constructor will assign default values to properties that have it defined,
+and makes sure properties required by API are set, but the set of arguments
+will change when the set of required properties is changed
+
+### NewDutyLocationV2WithDefaults
+
+`func NewDutyLocationV2WithDefaults() *DutyLocationV2`
+
+NewDutyLocationV2WithDefaults instantiates a new DutyLocationV2 object
+This constructor will only assign default values to properties that have it defined,
+but it doesn't guarantee that properties required by API are set
+
+### GetId
+
+`func (o *DutyLocationV2) GetId() string`
+
+GetId returns the Id field if non-nil, zero value otherwise.
+
+### GetIdOk
+
+`func (o *DutyLocationV2) GetIdOk() (*string, bool)`
+
+GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetId
+
+`func (o *DutyLocationV2) SetId(v string)`
+
+SetId sets Id field to given value.
+
+### HasId
+
+`func (o *DutyLocationV2) HasId() bool`
+
+HasId returns a boolean if a field has been set.
+
+### GetName
+
+`func (o *DutyLocationV2) GetName() string`
+
+GetName returns the Name field if non-nil, zero value otherwise.
+
+### GetNameOk
+
+`func (o *DutyLocationV2) GetNameOk() (*string, bool)`
+
+GetNameOk returns a tuple with the Name field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetName
+
+`func (o *DutyLocationV2) SetName(v string)`
+
+SetName sets Name field to given value.
+
+### HasName
+
+`func (o *DutyLocationV2) HasName() bool`
+
+HasName returns a boolean if a field has been set.
+
+### GetAddressID
+
+`func (o *DutyLocationV2) GetAddressID() string`
+
+GetAddressID returns the AddressID field if non-nil, zero value otherwise.
+
+### GetAddressIDOk
+
+`func (o *DutyLocationV2) GetAddressIDOk() (*string, bool)`
+
+GetAddressIDOk returns a tuple with the AddressID field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetAddressID
+
+`func (o *DutyLocationV2) SetAddressID(v string)`
+
+SetAddressID sets AddressID field to given value.
+
+### HasAddressID
+
+`func (o *DutyLocationV2) HasAddressID() bool`
+
+HasAddressID returns a boolean if a field has been set.
+
+### GetAddress
+
+`func (o *DutyLocationV2) GetAddress() AddressV2V2`
+
+GetAddress returns the Address field if non-nil, zero value otherwise.
+
+### GetAddressOk
+
+`func (o *DutyLocationV2) GetAddressOk() (*AddressV2V2, bool)`
+
+GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetAddress
+
+`func (o *DutyLocationV2) SetAddress(v AddressV2V2)`
+
+SetAddress sets Address field to given value.
+
+### HasAddress
+
+`func (o *DutyLocationV2) HasAddress() bool`
+
+HasAddress returns a boolean if a field has been set.
+
+### GetETag
+
+`func (o *DutyLocationV2) GetETag() string`
+
+GetETag returns the ETag field if non-nil, zero value otherwise.
+
+### GetETagOk
+
+`func (o *DutyLocationV2) GetETagOk() (*string, bool)`
+
+GetETagOk returns a tuple with the ETag field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetETag
+
+`func (o *DutyLocationV2) SetETag(v string)`
+
+SetETag sets ETag field to given value.
+
+### HasETag
+
+`func (o *DutyLocationV2) HasETag() bool`
+
+HasETag returns a boolean if a field has been set.
+
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

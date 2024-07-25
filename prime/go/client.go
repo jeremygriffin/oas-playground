@@ -1,7 +1,7 @@
 /*
-MilMove Prime API
+MilMove Prime V2 API
 
-The Prime API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v1/`. 
+The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
 
 API version: 0.0.1
 Contact: milmove-developers@caci.com
@@ -42,7 +42,7 @@ var (
 	queryDescape    = strings.NewReplacer( "%5B", "[", "%5D", "]" )
 )
 
-// APIClient manages communication with the MilMove Prime API API v0.0.1
+// APIClient manages communication with the MilMove Prime V2 API API v0.0.1
 // In most cases there should be only one, shared, APIClient.
 type APIClient struct {
 	cfg    *Configuration
@@ -52,13 +52,7 @@ type APIClient struct {
 
 	MoveTaskOrderAPI *MoveTaskOrderAPIService
 
-	MtoServiceItemAPI *MtoServiceItemAPIService
-
 	MtoShipmentAPI *MtoShipmentAPIService
-
-	PaymentRequestAPI *PaymentRequestAPIService
-
-	SitAddressUpdateAPI *SitAddressUpdateAPIService
 }
 
 type service struct {
@@ -78,10 +72,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 
 	// API Services
 	c.MoveTaskOrderAPI = (*MoveTaskOrderAPIService)(&c.common)
-	c.MtoServiceItemAPI = (*MtoServiceItemAPIService)(&c.common)
 	c.MtoShipmentAPI = (*MtoShipmentAPIService)(&c.common)
-	c.PaymentRequestAPI = (*PaymentRequestAPIService)(&c.common)
-	c.SitAddressUpdateAPI = (*SitAddressUpdateAPIService)(&c.common)
 
 	return c
 }

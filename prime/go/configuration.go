@@ -1,7 +1,7 @@
 /*
-MilMove Prime API
+MilMove Prime V2 API
 
-The Prime API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v1/`. 
+The Prime V2 API is a RESTful API that enables the Prime contractor to request information about upcoming moves, update the details and status of those moves, and make payment requests. It uses Mutual TLS for authentication procedures.  All endpoints are located at `/prime/v2/`. 
 
 API version: 0.0.1
 Contact: milmove-developers@caci.com
@@ -91,7 +91,7 @@ func NewConfiguration() *Configuration {
 		Debug:            false,
 		Servers:          ServerConfigurations{
 			{
-				URL: "/prime/v1",
+				URL: "/prime/v2",
 				Description: "No description provided",
 			},
 		},

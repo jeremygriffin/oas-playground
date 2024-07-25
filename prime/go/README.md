@@ -1,10 +1,10 @@
 # Go API client for openapi
 
-The Prime API is a RESTful API that enables the Prime contractor to request
+The Prime V2 API is a RESTful API that enables the Prime contractor to request
 information about upcoming moves, update the details and status of those moves,
 and make payment requests. It uses Mutual TLS for authentication procedures.
 
-All endpoints are located at `/prime/v1/`.
+All endpoints are located at `/prime/v2/`.
 
 
 ## Overview
@@ -79,103 +79,79 @@ ctx = context.WithValue(context.Background(), openapi.ContextOperationServerVari
 
 ## Documentation for API Endpoints
 
-All URIs are relative to */prime/v1*
+All URIs are relative to */prime/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*MoveTaskOrderAPI* | [**CreateExcessWeightRecord**](docs/MoveTaskOrderAPI.md#createexcessweightrecord) | **Post** /move-task-orders/{moveTaskOrderID}/excess-weight-record | createExcessWeightRecord
-*MoveTaskOrderAPI* | [**DownloadMoveOrder**](docs/MoveTaskOrderAPI.md#downloadmoveorder) | **Get** /moves/{locator}/documents | Downloads move order as a PDF
 *MoveTaskOrderAPI* | [**GetMoveTaskOrder**](docs/MoveTaskOrderAPI.md#getmovetaskorder) | **Get** /move-task-orders/{moveID} | getMoveTaskOrder
-*MoveTaskOrderAPI* | [**ListMoves**](docs/MoveTaskOrderAPI.md#listmoves) | **Get** /moves | listMoves
-*MoveTaskOrderAPI* | [**UpdateMTOPostCounselingInformation**](docs/MoveTaskOrderAPI.md#updatemtopostcounselinginformation) | **Patch** /move-task-orders/{moveTaskOrderID}/post-counseling-info | updateMTOPostCounselingInformation
-*MtoServiceItemAPI* | [**CreateMTOServiceItem**](docs/MtoServiceItemAPI.md#createmtoserviceitem) | **Post** /mto-service-items | createMTOServiceItem
-*MtoServiceItemAPI* | [**CreateServiceRequestDocumentUpload**](docs/MtoServiceItemAPI.md#createservicerequestdocumentupload) | **Post** /mto-service-items/{mtoServiceItemID}/uploads | createServiceRequestDocumentUpload
-*MtoServiceItemAPI* | [**UpdateMTOServiceItem**](docs/MtoServiceItemAPI.md#updatemtoserviceitem) | **Patch** /mto-service-items/{mtoServiceItemID} | updateMTOServiceItem
-*MtoShipmentAPI* | [**CreateMTOAgent**](docs/MtoShipmentAPI.md#createmtoagent) | **Post** /mto-shipments/{mtoShipmentID}/agents | createMTOAgent
 *MtoShipmentAPI* | [**CreateMTOShipment**](docs/MtoShipmentAPI.md#createmtoshipment) | **Post** /mto-shipments | createMTOShipment
-*MtoShipmentAPI* | [**CreateSITExtension**](docs/MtoShipmentAPI.md#createsitextension) | **Post** /mto-shipments/{mtoShipmentID}/sit-extensions | createSITExtension
-*MtoShipmentAPI* | [**DeleteMTOShipment**](docs/MtoShipmentAPI.md#deletemtoshipment) | **Delete** /mto-shipments/{mtoShipmentID} | deleteMTOShipment
-*MtoShipmentAPI* | [**UpdateMTOAgent**](docs/MtoShipmentAPI.md#updatemtoagent) | **Put** /mto-shipments/{mtoShipmentID}/agents/{agentID} | updateMTOAgent
 *MtoShipmentAPI* | [**UpdateMTOShipment**](docs/MtoShipmentAPI.md#updatemtoshipment) | **Patch** /mto-shipments/{mtoShipmentID} | updateMTOShipment
-*MtoShipmentAPI* | [**UpdateMTOShipmentAddress**](docs/MtoShipmentAPI.md#updatemtoshipmentaddress) | **Put** /mto-shipments/{mtoShipmentID}/addresses/{addressID} | updateMTOShipmentAddress
-*MtoShipmentAPI* | [**UpdateMTOShipmentStatus**](docs/MtoShipmentAPI.md#updatemtoshipmentstatus) | **Patch** /mto-shipments/{mtoShipmentID}/status | updateMTOShipmentStatus
-*MtoShipmentAPI* | [**UpdateReweigh**](docs/MtoShipmentAPI.md#updatereweigh) | **Patch** /mto-shipments/{mtoShipmentID}/reweighs/{reweighID} | updateReweigh
-*MtoShipmentAPI* | [**UpdateShipmentDestinationAddress**](docs/MtoShipmentAPI.md#updateshipmentdestinationaddress) | **Post** /mto-shipments/{mtoShipmentID}/shipment-address-updates | updateShipmentDestinationAddress
-*PaymentRequestAPI* | [**CreatePaymentRequest**](docs/PaymentRequestAPI.md#createpaymentrequest) | **Post** /payment-requests | createPaymentRequest
-*PaymentRequestAPI* | [**CreateUpload**](docs/PaymentRequestAPI.md#createupload) | **Post** /payment-requests/{paymentRequestID}/uploads | createUpload
-*SitAddressUpdateAPI* | [**CreateSITAddressUpdateRequest**](docs/SitAddressUpdateAPI.md#createsitaddressupdaterequest) | **Post** /sit-address-updates | createSITAddressUpdateRequest
 
 
 ## Documentation For Models
 
- - [Address](docs/Address.md)
- - [Amendments](docs/Amendments.md)
- - [ClientError](docs/ClientError.md)
- - [CreateMTOShipment](docs/CreateMTOShipment.md)
- - [CreatePPMShipment](docs/CreatePPMShipment.md)
- - [CreatePaymentRequest](docs/CreatePaymentRequest.md)
- - [CreateSITAddressUpdateRequest](docs/CreateSITAddressUpdateRequest.md)
- - [CreateSITExtension](docs/CreateSITExtension.md)
- - [Customer](docs/Customer.md)
- - [DestinationType](docs/DestinationType.md)
- - [DutyLocation](docs/DutyLocation.md)
- - [Entitlements](docs/Entitlements.md)
- - [Error](docs/Error.md)
- - [ExcessWeightRecord](docs/ExcessWeightRecord.md)
- - [ListMove](docs/ListMove.md)
- - [MTOAgent](docs/MTOAgent.md)
- - [MTOAgentType](docs/MTOAgentType.md)
- - [MTOServiceItem](docs/MTOServiceItem.md)
- - [MTOServiceItemBasic](docs/MTOServiceItemBasic.md)
- - [MTOServiceItemDestSIT](docs/MTOServiceItemDestSIT.md)
- - [MTOServiceItemDimension](docs/MTOServiceItemDimension.md)
- - [MTOServiceItemDomesticCrating](docs/MTOServiceItemDomesticCrating.md)
- - [MTOServiceItemModelType](docs/MTOServiceItemModelType.md)
- - [MTOServiceItemOriginSIT](docs/MTOServiceItemOriginSIT.md)
- - [MTOServiceItemShuttle](docs/MTOServiceItemShuttle.md)
- - [MTOServiceItemStatus](docs/MTOServiceItemStatus.md)
- - [MTOShipment](docs/MTOShipment.md)
- - [MTOShipmentType](docs/MTOShipmentType.md)
- - [MTOShipmentWithoutServiceItems](docs/MTOShipmentWithoutServiceItems.md)
- - [MoveTaskOrder](docs/MoveTaskOrder.md)
- - [Order](docs/Order.md)
- - [OrdersType](docs/OrdersType.md)
- - [PPMShipment](docs/PPMShipment.md)
- - [PPMShipmentStatus](docs/PPMShipmentStatus.md)
- - [PaymentRequest](docs/PaymentRequest.md)
- - [PaymentRequestStatus](docs/PaymentRequestStatus.md)
- - [PaymentServiceItem](docs/PaymentServiceItem.md)
- - [PaymentServiceItemParam](docs/PaymentServiceItemParam.md)
- - [PaymentServiceItemStatus](docs/PaymentServiceItemStatus.md)
- - [ProofOfServiceDoc](docs/ProofOfServiceDoc.md)
- - [ReServiceCode](docs/ReServiceCode.md)
- - [Reweigh](docs/Reweigh.md)
- - [ReweighRequester](docs/ReweighRequester.md)
- - [SITExtension](docs/SITExtension.md)
- - [SITLocationType](docs/SITLocationType.md)
- - [ServiceItem](docs/ServiceItem.md)
- - [ServiceItemParamName](docs/ServiceItemParamName.md)
- - [ServiceItemParamOrigin](docs/ServiceItemParamOrigin.md)
- - [ServiceItemParamType](docs/ServiceItemParamType.md)
- - [ServiceItemParamsInner](docs/ServiceItemParamsInner.md)
- - [ServiceRequestDocument](docs/ServiceRequestDocument.md)
- - [ShipmentAddressUpdate](docs/ShipmentAddressUpdate.md)
- - [ShipmentAddressUpdateStatus](docs/ShipmentAddressUpdateStatus.md)
- - [SitAddressUpdate](docs/SitAddressUpdate.md)
- - [SitAddressUpdateStatus](docs/SitAddressUpdateStatus.md)
- - [StorageFacility](docs/StorageFacility.md)
- - [UpdateMTOServiceItem](docs/UpdateMTOServiceItem.md)
- - [UpdateMTOServiceItemModelType](docs/UpdateMTOServiceItemModelType.md)
- - [UpdateMTOServiceItemSIT](docs/UpdateMTOServiceItemSIT.md)
- - [UpdateMTOServiceItemShuttle](docs/UpdateMTOServiceItemShuttle.md)
- - [UpdateMTOShipment](docs/UpdateMTOShipment.md)
- - [UpdateMTOShipmentStatus](docs/UpdateMTOShipmentStatus.md)
- - [UpdateMTOShipmentStorageFacility](docs/UpdateMTOShipmentStorageFacility.md)
- - [UpdatePPMShipment](docs/UpdatePPMShipment.md)
- - [UpdateReweigh](docs/UpdateReweigh.md)
- - [UpdateShipmentDestinationAddress](docs/UpdateShipmentDestinationAddress.md)
- - [UploadWithOmissions](docs/UploadWithOmissions.md)
- - [ValidationError](docs/ValidationError.md)
+ - [AddressV2](docs/AddressV2.md)
+ - [ClientErrorV2](docs/ClientErrorV2.md)
+ - [CreateMTOShipmentV2](docs/CreateMTOShipmentV2.md)
+ - [CreatePPMShipmentV2](docs/CreatePPMShipmentV2.md)
+ - [CreateSITAddressUpdateRequestV2](docs/CreateSITAddressUpdateRequestV2.md)
+ - [CreateSITExtensionV2](docs/CreateSITExtensionV2.md)
+ - [CustomerV2](docs/CustomerV2.md)
+ - [DestinationTypeV2](docs/DestinationTypeV2.md)
+ - [DutyLocationV2](docs/DutyLocationV2.md)
+ - [EntitlementsV2](docs/EntitlementsV2.md)
+ - [ErrorV2](docs/ErrorV2.md)
+ - [MTOAgentTypeV2](docs/MTOAgentTypeV2.md)
+ - [MTOAgentV2](docs/MTOAgentV2.md)
+ - [MTOServiceItemBasicV2](docs/MTOServiceItemBasicV2.md)
+ - [MTOServiceItemDestSITV2](docs/MTOServiceItemDestSITV2.md)
+ - [MTOServiceItemDimensionV2](docs/MTOServiceItemDimensionV2.md)
+ - [MTOServiceItemDomesticCratingV2](docs/MTOServiceItemDomesticCratingV2.md)
+ - [MTOServiceItemModelTypeV2](docs/MTOServiceItemModelTypeV2.md)
+ - [MTOServiceItemOriginSITV2](docs/MTOServiceItemOriginSITV2.md)
+ - [MTOServiceItemShuttleV2](docs/MTOServiceItemShuttleV2.md)
+ - [MTOServiceItemStatusV2](docs/MTOServiceItemStatusV2.md)
+ - [MTOServiceItemV2](docs/MTOServiceItemV2.md)
+ - [MTOShipmentTypeV2](docs/MTOShipmentTypeV2.md)
+ - [MTOShipmentV2](docs/MTOShipmentV2.md)
+ - [MTOShipmentWithoutServiceItemsV2](docs/MTOShipmentWithoutServiceItemsV2.md)
+ - [MoveTaskOrderV2](docs/MoveTaskOrderV2.md)
+ - [OrderV2](docs/OrderV2.md)
+ - [OrdersTypeV2](docs/OrdersTypeV2.md)
+ - [PPMShipmentStatusV2](docs/PPMShipmentStatusV2.md)
+ - [PPMShipmentV2](docs/PPMShipmentV2.md)
+ - [PaymentRequestStatusV2](docs/PaymentRequestStatusV2.md)
+ - [PaymentRequestV2](docs/PaymentRequestV2.md)
+ - [PaymentServiceItemParamV2](docs/PaymentServiceItemParamV2.md)
+ - [PaymentServiceItemStatusV2](docs/PaymentServiceItemStatusV2.md)
+ - [PaymentServiceItemV2](docs/PaymentServiceItemV2.md)
+ - [ProofOfServiceDocV2](docs/ProofOfServiceDocV2.md)
+ - [ReServiceCodeV2](docs/ReServiceCodeV2.md)
+ - [ReweighRequesterV2](docs/ReweighRequesterV2.md)
+ - [ReweighV2](docs/ReweighV2.md)
+ - [SITExtensionV2](docs/SITExtensionV2.md)
+ - [SITLocationTypeV2](docs/SITLocationTypeV2.md)
+ - [ServiceItemParamNameV2](docs/ServiceItemParamNameV2.md)
+ - [ServiceItemParamOriginV2](docs/ServiceItemParamOriginV2.md)
+ - [ServiceItemParamTypeV2](docs/ServiceItemParamTypeV2.md)
+ - [ServiceRequestDocumentV2](docs/ServiceRequestDocumentV2.md)
+ - [ShipmentAddressUpdateStatusV2](docs/ShipmentAddressUpdateStatusV2.md)
+ - [ShipmentAddressUpdateV2](docs/ShipmentAddressUpdateV2.md)
+ - [SitAddressUpdateStatusV2](docs/SitAddressUpdateStatusV2.md)
+ - [SitAddressUpdateV2](docs/SitAddressUpdateV2.md)
+ - [StorageFacilityV2](docs/StorageFacilityV2.md)
+ - [UpdateMTOServiceItemModelTypeV2](docs/UpdateMTOServiceItemModelTypeV2.md)
+ - [UpdateMTOServiceItemSITV2](docs/UpdateMTOServiceItemSITV2.md)
+ - [UpdateMTOServiceItemShuttleV2](docs/UpdateMTOServiceItemShuttleV2.md)
+ - [UpdateMTOServiceItemV2](docs/UpdateMTOServiceItemV2.md)
+ - [UpdateMTOShipmentStatusV2](docs/UpdateMTOShipmentStatusV2.md)
+ - [UpdateMTOShipmentStorageFacilityV2](docs/UpdateMTOShipmentStorageFacilityV2.md)
+ - [UpdateMTOShipmentV2](docs/UpdateMTOShipmentV2.md)
+ - [UpdatePPMShipmentV2](docs/UpdatePPMShipmentV2.md)
+ - [UpdateReweighV2](docs/UpdateReweighV2.md)
+ - [UpdateShipmentDestinationAddressV2](docs/UpdateShipmentDestinationAddressV2.md)
+ - [UploadWithOmissionsV2](docs/UploadWithOmissionsV2.md)
+ - [ValidationErrorV2](docs/ValidationErrorV2.md)
 
 
 ## Documentation For Authorization

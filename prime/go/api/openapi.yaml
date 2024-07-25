@@ -3,18 +3,18 @@ info:
   contact:
     email: milmove-developers@caci.com
   description: |
-    The Prime API is a RESTful API that enables the Prime contractor to request
+    The Prime V2 API is a RESTful API that enables the Prime contractor to request
     information about upcoming moves, update the details and status of those moves,
     and make payment requests. It uses Mutual TLS for authentication procedures.
 
-    All endpoints are located at `/prime/v1/`.
+    All endpoints are located at `/prime/v2/`.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  title: MilMove Prime API
+  title: MilMove Prime V2 API
   version: 0.0.1
 servers:
-- url: /prime/v1
+- url: /prime/v2
 tags:
 - description: |
     The **moveTaskOrder** represents a military move that has been sent to a contractor. It contains all the information about shipments, including service items, estimated weights, actual weights, requested and scheduled move dates, etc.
@@ -28,79 +28,7 @@ tags:
     If the sum of the shipments is greater, the customer is liable for paying excess weight cost. Both the customer and
     the contractor should keep this potential cost in mind when planning a move and the shipments within it.
   name: mtoShipment
-- description: |
-    A service item is a service that the contractor can bill for. For example, if the movers pack and/or unpack a
-    customer's belongings, those are billable services (packing and unpacking). All **mtoServiceItems** must be
-    approved by the TOO before payment can be requested.
-
-    There are three types of service items: accessorial, MTO-level, and standard.
-
-    **WIP:** Add an external link to an article that explains the different types of service items in more detail.
-  name: mtoServiceItem
-- description: |
-    The contractor submits a **paymentRequest** to the TIO for approval in order to be reimbursed for 1 or more
-    **mtoServiceItems** on a **moveTaskOrder**. A service item can be on multiple payment requests if necessary.
-
-    Proof of service documentation may be uploaded for each **mtoServiceItem** in a **paymentRequest** after the payment
-    request is created via the endpoint [createUpload](#operation/createUpload).
-
-    All weight entered should be in *pounds* and no other unit of measurement.
-  name: paymentRequest
-- description: |
-    **THIS ENDPOINT WILL BE DEPRECATED ON AUGUST 5TH, 2024 - REFER TO DESCRIPTION FOR DETAILS**
-
-    A **sitAddressUpdate** is submitted when the prime or office user wishes to update the final address for an
-    approved service item. sitAddressUpdates with a distance less than or equal to 50 miles will be automatically
-    approved while a distance greater than 50 miles will typically require office user approval.
-  name: sitAddressUpdate
 paths:
-  /moves:
-    get:
-      description: |
-        Gets all moves that have been reviewed and approved by the TOO. The `since` parameter can be used to filter this
-        list down to only the moves that have been updated since the provided timestamp. A move will be considered
-        updated if the `updatedAt` timestamp on the move or on its orders, shipments, service items, or payment
-        requests, is later than the provided date and time.
-
-        **WIP**: Include what causes moves to leave this list. Currently, once the `availableToPrimeAt` timestamp has
-        been set, that move will always appear in this list.
-      operationId: listMoves
-      parameters:
-      - description: Only return moves updated since this time. Formatted like "2021-07-23T18:30:47.116Z"
-        in: query
-        name: since
-        schema:
-          format: date-time
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListMoves'
-          description: Successfully retrieved moves. A successful fetch might still
-            return zero moves.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: listMoves
-      tags:
-      - moveTaskOrder
   /move-task-orders/{moveID}:
     get:
       description: |
@@ -108,6 +36,10 @@ paths:
         This endpoint gets an individual MoveTaskOrder by ID.
 
         It will provide information about the Customer and any associated MTOShipments, MTOServiceItems and PaymentRequests.
+
+        **NOTE**: New version in v3. Version will return PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
+        secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
+        destinationPostalCode and secondaryDestinationPostalCode].
       operationId: getMoveTaskOrder
       parameters:
       - description: UUID or MoveCode of move task order to use.
@@ -150,156 +82,21 @@ paths:
       summary: getMoveTaskOrder
       tags:
       - moveTaskOrder
-  /move-task-orders/{moveTaskOrderID}/excess-weight-record:
-    post:
-      description: |
-        Uploads an excess weight record, which is a document that proves that the movers or contractors have counseled the customer about their excess weight. Excess weight counseling should occur after the sum of the shipments for the customer's move crosses the excess weight alert threshold.
-      operationId: createExcessWeightRecord
-      parameters:
-      - description: UUID of the move being updated.
-        in: path
-        name: moveTaskOrderID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/createExcessWeightRecord_request'
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExcessWeightRecord'
-          description: Successfully uploaded the excess weight record file.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: createExcessWeightRecord
-      tags:
-      - moveTaskOrder
-  /move-task-orders/{moveTaskOrderID}/post-counseling-info:
-    patch:
-      description: |
-        ### Functionality
-        This endpoint **updates** the MoveTaskOrder to indicate that the Prime has completed Counseling.
-        This update uses the moveTaskOrderID provided in the path, updates the move status and marks child elements of the move to indicate the update.
-        No body object is expected for this request.
-
-        **For Full/Partial PPMs**: This action is required so that the customer can start uploading their proof of service docs.
-
-        **For other move types**: This action is required for auditing reasons so that we have a record of when the Prime counseled the customer.
-      operationId: updateMTOPostCounselingInformation
-      parameters:
-      - description: ID of move task order to use.
-        in: path
-        name: moveTaskOrderID
-        required: true
-        schema:
-          type: string
-      - description: |
-          Optimistic locking is implemented via the `If-Match` header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a `412 Precondition Failed` error.
-        in: header
-        name: If-Match
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MoveTaskOrder'
-          description: Successfully updated move task order with post counseling information.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "412":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: "Precondition failed, likely due to a stale eTag (If-Match).\
-            \ Fetch the request again to get the updated eTag value."
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: updateMTOPostCounselingInformation
-      tags:
-      - moveTaskOrder
   /mto-shipments:
     post:
       description: |
-        _[Deprecated: sunset on 2024-04-08]_ This endpoint is deprecated and will be removed in a future version.
-        Please use the new endpoint at `/prime/v2/createMTOShipment` instead.
-
         Creates a new shipment within the specified move. This endpoint should be used whenever the movers identify a
         need for an additional shipment. The new shipment will be submitted to the TOO for review, and the TOO must
         approve it before the contractor can proceed with billing.
+
+        **NOTE**: When creating a child shipment diversion, you can no longer specify the `primeActualWeight`.
+        If you create a new diverted shipment with the `diversion` and `divertedFromShipmentId` parameter, it will automatically
+        inherit the primeActualWeight of its `divertedFromShipmentId` parent. Payment requests created on a diverted shipment "chain" will utilize
+        the lowest weight possible in the chain to prevent overcharging as they are still separate shipments.
+
+        **NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
+        secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
+        destinationPostalCode and secondaryDestinationPostalCode].
 
         **WIP**: The Prime should be notified by a push notification whenever the TOO approves a shipment connected to
         one of their moves. Otherwise, the Prime can fetch the related move using the
@@ -348,79 +145,8 @@ paths:
       - mtoShipment
       x-codegen-request-body-name: body
   /mto-shipments/{mtoShipmentID}:
-    delete:
-      description: |
-        ### Functionality
-        This endpoint deletes an individual shipment by ID.
-
-        ### Errors
-        * The mtoShipment should be associated with an MTO that is available to prime.
-        * The mtoShipment must be a PPM shipment.
-        * Counseling should not have already been completed for the associated MTO.
-      operationId: deleteMTOShipment
-      parameters:
-      - description: UUID of the shipment to be deleted
-        in: path
-        name: mtoShipmentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      responses:
-        "204":
-          content: {}
-          description: Successfully deleted the MTO shipment.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: deleteMTOShipment
-      tags:
-      - mtoShipment
     patch:
       description: |
-        _[Deprecated: sunset on August 5th, 2024]_ This endpoint is deprecated and will be removed in a future version.
-        Please use the new endpoint at `/prime/v2/updateMTOShipment` instead.
-
-        **DEPRECATION ON AUGUST 5TH, 2024**
-        Following deprecation, there is an edge case scenario where a PPM shipment with no addresses could be updated and it would also update the final destination SIT address
-        for SIT service items. This edge case has been removed as you should not be able to update items using this endpoint. Third-party APIs have confirmed they will require
-        deprecation for this change.
-
         Updates an existing shipment for a move.
 
         Note that there are some restrictions on nested objects:
@@ -432,6 +158,10 @@ paths:
         These restrictions are due to our [optimistic locking/concurrency control](https://transcom.github.io/mymove-docs/docs/dev/contributing/backend/use-optimistic-locking) mechanism.
 
         Note that some fields cannot be manually changed but will still be updated automatically, such as `primeEstimatedWeightRecordedDate` and `requiredDeliveryDate`.
+
+        **NOTE**: New version in v3. Version will accept PPM addresses[pickupAddress, destinationAddress, secondaryPickupAddress
+        secondaryDestinationAddress]. PPM postalCodes will be phased out[pickupPostalCode, secondaryPickupPostalCode,
+        destinationPostalCode and secondaryDestinationPostalCode].
       operationId: updateMTOShipment
       parameters:
       - description: UUID of the shipment being updated.
@@ -509,1449 +239,6 @@ paths:
       tags:
       - mtoShipment
       x-codegen-request-body-name: body
-  /mto-shipments/{mtoShipmentID}/addresses/{addressID}:
-    put:
-      description: |
-        ### Functionality
-        This endpoint is used to **update** the pickup, secondary, and destination addresses on an MTO Shipment. mto-shipments/{mtoShipmentID}/shipment-address-updates is for updating a delivery address. The address details completely replace the original, except for the UUID.
-        Therefore a complete address should be sent in the request.
-        When a destination address on a shipment is updated, the destination SIT service items address ID will also be updated so that shipment and service item final destinations match.
-
-        This endpoint **cannot create** an address.
-        To create an address on an MTO shipment, the caller must use [updateMTOShipment](#operation/updateMTOShipment) as the parent shipment has to be updated with the appropriate link to the address.
-
-        ### Errors
-        The address must be associated with the mtoShipment passed in the url.
-        In other words, it should be listed as pickupAddress, destinationAddress, secondaryPickupAddress or secondaryDeliveryAddress on the mtoShipment provided.
-        If it is not, caller will receive a **Conflict** Error.
-
-        The mtoShipment should be associated with an MTO that is available to prime.
-        If the caller requests an update to an address, and the shipment is not on an available MTO, the caller will receive a **NotFound** Error.
-      operationId: updateMTOShipmentAddress
-      parameters:
-      - description: UUID of the shipment associated with the address
-        in: path
-        name: mtoShipmentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      - description: UUID of the address being updated
-        in: path
-        name: addressID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      - description: |
-          Optimistic locking is implemented via the `If-Match` header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a `412 Precondition Failed` error.
-        in: header
-        name: If-Match
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Address'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Address'
-          description: Successfully updated the address.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "412":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: "Precondition failed, likely due to a stale eTag (If-Match).\
-            \ Fetch the request again to get the updated eTag value."
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: updateMTOShipmentAddress
-      tags:
-      - mtoShipment
-      x-codegen-request-body-name: body
-  /mto-shipments/{mtoShipmentID}/shipment-address-updates:
-    post:
-      description: |
-        ### Functionality
-        This endpoint is used so the Prime can request an **update** for the destination address on an MTO Shipment,
-        after the destination address has already been approved.
-        If automatically approved or TOO approves, this will update the final destination address values for destination SIT service items to be the same as the changed destination address that was approved.
-        Address updates will be automatically approved unless they change:
-          - The service area
-          - Mileage bracket for direct delivery
-          - the address and the distance between the old and new address is > 50
-          - Domestic Short Haul to Domestic Line Haul or vice versa
-              - Shipments that start and end in one ZIP3 use Short Haul pricing
-              - Shipments that start and end in different ZIP3s use Line Haul pricing
-
-        For those, changes will require TOO approval.
-      operationId: updateShipmentDestinationAddress
-      parameters:
-      - description: UUID of the shipment associated with the address
-        in: path
-        name: mtoShipmentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      - description: |
-          Needs to be the eTag of the mtoShipment. Optimistic locking is implemented via the `If-Match` header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a `412 Precondition Failed` error.
-        in: header
-        name: If-Match
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateShipmentDestinationAddress'
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ShipmentAddressUpdate'
-          description: Successfully created the address update request.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "412":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: "Precondition failed, likely due to a stale eTag (If-Match).\
-            \ Fetch the request again to get the updated eTag value."
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: updateShipmentDestinationAddress
-      tags:
-      - mtoShipment
-      x-codegen-request-body-name: body
-  /mto-shipments/{mtoShipmentID}/agents:
-    post:
-      description: |
-        ### Functionality
-        This endpoint is used to **create** and add agents for an existing MTO Shipment. Only the fields being modified need to be sent in the request body.
-
-        ### Errors
-        The agent must always have a name and at least one method of contact (either `email` or `phone`).
-
-        The agent must be associated with the MTO shipment passed in the url.
-
-        The shipment should be associated with an MTO that is available to the Pime.
-        If the caller requests a new agent, and the shipment is not on an available MTO, the caller will receive a **NotFound** response.
-      operationId: createMTOAgent
-      parameters:
-      - description: UUID of the shipment associated with the agent
-        in: path
-        name: mtoShipmentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MTOAgent'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MTOAgent'
-          description: Successfully added the agent.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: createMTOAgent
-      tags:
-      - mtoShipment
-      x-codegen-request-body-name: body
-  /mto-shipments/{mtoShipmentID}/agents/{agentID}:
-    put:
-      description: |
-        ### Functionality
-        This endpoint is used to **update** the agents for an MTO Shipment. Only the fields being modified need to be sent in the request body.
-
-        ### Errors:
-        The agent must always have a name and at least one method of contact (either `email` or `phone`).
-
-        The agent must be associated with the MTO shipment passed in the url.
-
-        The shipment should be associated with an MTO that is available to the Prime.
-        If the caller requests an update to an agent, and the shipment is not on an available MTO, the caller will receive a **NotFound** response.
-      operationId: updateMTOAgent
-      parameters:
-      - description: UUID of the shipment associated with the agent
-        in: path
-        name: mtoShipmentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      - description: UUID of the agent being updated
-        in: path
-        name: agentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      - description: |
-          Optimistic locking is implemented via the `If-Match` header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a `412 Precondition Failed` error.
-        in: header
-        name: If-Match
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MTOAgent'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MTOAgent'
-          description: Successfully updated the agent.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "412":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: "Precondition failed, likely due to a stale eTag (If-Match).\
-            \ Fetch the request again to get the updated eTag value."
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: updateMTOAgent
-      tags:
-      - mtoShipment
-      x-codegen-request-body-name: body
-  /mto-shipments/{mtoShipmentID}/reweighs/{reweighID}:
-    patch:
-      description: |
-        ### Functionality
-        This endpoint can be used to update a reweigh with a new weight or to provide the reason why a reweigh did not occur.
-        Only one of weight or verificationReason should be sent in the request body.
-
-        A reweigh is the second recorded weight for a shipment, as validated by certified weight tickets. Applies to one shipment.
-        A reweigh can be triggered automatically, or requested by the customer or transportation office. Not all shipments are reweighed,
-        so not all shipments will have a reweigh weight.
-      operationId: updateReweigh
-      parameters:
-      - description: UUID of the shipment associated with the reweigh
-        in: path
-        name: mtoShipmentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      - description: UUID of the reweigh being updated
-        in: path
-        name: reweighID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      - description: |
-          Optimistic locking is implemented via the `If-Match` header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a `412 Precondition Failed` error.
-        in: header
-        name: If-Match
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateReweigh'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reweigh'
-          description: Successfully updated the reweigh.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "412":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: "Precondition failed, likely due to a stale eTag (If-Match).\
-            \ Fetch the request again to get the updated eTag value."
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: updateReweigh
-      tags:
-      - mtoShipment
-      x-codegen-request-body-name: body
-  /mto-shipments/{mtoShipmentID}/sit-extensions:
-    post:
-      description: |
-        ### Functionality
-        This endpoint creates a storage in transit (SIT) extension request for a shipment. A SIT extension request is a request an
-        increase in the shipment day allowance for the number of days a shipment is allowed to be in SIT. The total SIT day allowance
-        includes time spent in both origin and destination SIT.
-      operationId: createSITExtension
-      parameters:
-      - description: UUID of the shipment associated with the agent
-        in: path
-        name: mtoShipmentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateSITExtension'
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SITExtension'
-          description: Successfully created the sit extension request.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: createSITExtension
-      tags:
-      - mtoShipment
-      x-codegen-request-body-name: body
-  /mto-shipments/{mtoShipmentID}/status:
-    patch:
-      description: |
-        ### Functionality
-        This endpoint should be used by the Prime to confirm the cancellation of a shipment. It allows the shipment
-        status to be changed to "CANCELED." Currently, the Prime cannot update the shipment to any other status.
-      operationId: updateMTOShipmentStatus
-      parameters:
-      - description: UUID of the shipment associated with the agent
-        in: path
-        name: mtoShipmentID
-        required: true
-        schema:
-          format: uuid
-          type: string
-      - description: |
-          Optimistic locking is implemented via the `If-Match` header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a `412 Precondition Failed` error.
-        in: header
-        name: If-Match
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateMTOShipmentStatus'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MTOShipment'
-          description: Successfully updated the shipment's status.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "412":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: "Precondition failed, likely due to a stale eTag (If-Match).\
-            \ Fetch the request again to get the updated eTag value."
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: updateMTOShipmentStatus
-      tags:
-      - mtoShipment
-      x-codegen-request-body-name: body
-  /mto-service-items:
-    post:
-      description: |
-        Creates one or more MTOServiceItems. Not all service items may be created, please see details below.
-
-        This endpoint supports different body definitions. In the modelType field below, select the modelType corresponding
-         to the service item you wish to create and the documentation will update with the new definition.
-
-        Upon creation these items are associated with a Move Task Order and an MTO Shipment.
-        The request must include UUIDs for the MTO and MTO Shipment connected to this service item. Some service item types require
-        additional service items to be autogenerated when added - all created service items, autogenerated included,
-        will be returned in the response.
-
-        To update a service item, please use [updateMTOServiceItem](#operation/updateMTOServiceItem) endpoint.
-
-        ---
-
-        **`MTOServiceItemOriginSIT`**
-
-        MTOServiceItemOriginSIT is a subtype of MTOServiceItem.
-
-        This model type describes a domestic origin SIT service item. Items can be created using this
-        model type with the following codes:
-
-        **DOFSIT**
-
-        **1st day origin SIT service item**. When a DOFSIT is requested, the API will auto-create the following group of service items:
-          * DOFSIT - Domestic origin 1st day SIT
-          * DOASIT - Domestic origin Additional day SIT
-          * DOPSIT - Domestic origin SIT pickup
-          * DOSFSC - Domestic origin SIT fuel surcharge
-
-        **DOASIT**
-
-        **Addt'l days origin SIT service item**. This represents an additional day of storage for the same item.
-        Additional DOASIT service items can be created and added to an existing shipment that **includes a DOFSIT service item**.
-
-        ---
-
-        **`MTOServiceItemDestSIT`**
-
-        MTOServiceItemDestSIT is a subtype of MTOServiceItem.
-
-        This model type describes a domestic destination SIT service item. Items can be created using this
-        model type with the following codes:
-
-        **DDFSIT**
-
-        **1st day destination SIT service item**.
-
-        These additional fields are optional for creating a DDFSIT:
-          * `firstAvailableDeliveryDate1`
-            * string <date>
-            * First available date that Prime can deliver SIT service item.
-            * firstAvailableDeliveryDate1, dateOfContact1, and timeMilitary1 are required together
-          * `dateOfContact1`
-            * string <date>
-            * Date of attempted contact by the prime corresponding to `timeMilitary1`
-            * dateOfContact1, timeMilitary1, and firstAvailableDeliveryDate1 are required together
-          * `timeMilitary1`
-            * string\d{4}Z
-            * Time of attempted contact corresponding to `dateOfContact1`, in military format.
-            * timeMilitary1, dateOfContact1, and firstAvailableDeliveryDate1 are required together
-          * `firstAvailableDeliveryDate2`
-            * string <date>
-            * Second available date that Prime can deliver SIT service item.
-            * firstAvailableDeliveryDate2, dateOfContact2, and timeMilitary2 are required together
-          * `dateOfContact2`
-            * string <date>
-            * Date of attempted contact delivery by the prime corresponding to `timeMilitary2`
-            * dateOfContact2, timeMilitary2, and firstAvailableDeliveryDate2 are required together
-          * `timeMilitary2`
-            * string\d{4}Z
-            * Time of attempted contact corresponding to `dateOfContact2`, in military format.
-            * timeMilitary2, dateOfContact2, and firstAvailableDeliveryDate2 are required together
-
-        When a DDFSIT is requested, the API will auto-create the following group of service items:
-          * DDFSIT - Domestic destination 1st day SIT
-          * DDASIT - Domestic destination Additional day SIT
-          * DDDSIT - Domestic destination SIT delivery
-          * DDSFSC - Domestic destination SIT fuel surcharge
-
-        **DDASIT**
-
-        **Addt'l days destination SIT service item**. This represents an additional day of storage for the same item.
-        Additional DDASIT service items can be created and added to an existing shipment that **includes a DDFSIT service item**.
-      operationId: createMTOServiceItem
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MTOServiceItem'
-        required: false
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/MTOServiceItem'
-                type: array
-          description: Successfully created an MTO service item.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: createMTOServiceItem
-      tags:
-      - mtoServiceItem
-      x-codegen-request-body-name: body
-  /mto-service-items/{mtoServiceItemID}:
-    patch:
-      description: |
-        Updates MTOServiceItems after creation. Not all service items or fields may be updated, please see details below.
-
-        This endpoint supports different body definitions. In the modelType field below, select the modelType corresponding
-         to the service item you wish to update and the documentation will update with the new definition.
-
-        * Addresses: To update a destination service item's SIT destination final address, update the shipment destination address.
-        For approved shipments, please use [updateShipmentDestinationAddress](#mtoShipment/updateShipmentDestinationAddress).
-        For shipments not yet approved, please use [updateMTOShipmentAddress](#mtoShipment/updateMTOShipmentAddress).
-
-        * SIT Service Items: Take note that when updating `sitCustomerContacted`, `sitDepartureDate`, or `sitRequestedDelivery`, we want
-        those to be updated on `DOASIT` (for origin SIT) and `DDASIT` (for destination SIT). If updating those values in other service
-        items, the office users will not have as much attention to those values.
-
-        To create a service item, please use [createMTOServiceItem](#mtoServiceItem/createMTOServiceItem)) endpoint.
-      operationId: updateMTOServiceItem
-      parameters:
-      - description: UUID of service item to update.
-        in: path
-        name: mtoServiceItemID
-        required: true
-        schema:
-          type: string
-      - description: |
-          Optimistic locking is implemented via the `If-Match` header. If the ETag header does not match the value of the resource on the server, the server rejects the change with a `412 Precondition Failed` error.
-        in: header
-        name: If-Match
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateMTOServiceItem'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MTOServiceItem'
-          description: Successfully updated the MTO service item.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "412":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: "Precondition failed, likely due to a stale eTag (If-Match).\
-            \ Fetch the request again to get the updated eTag value."
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: updateMTOServiceItem
-      tags:
-      - mtoServiceItem
-      x-codegen-request-body-name: body
-  /mto-service-items/{mtoServiceItemID}/uploads:
-    post:
-      description: |
-        ### Functionality
-
-        This endpoint **uploads** a Service Request document for a
-        ServiceItem.
-
-        The ServiceItem should already exist.
-
-        ServiceItems are created with the
-        [createMTOServiceItem](#operation/createMTOServiceItem)
-        endpoint.
-      operationId: createServiceRequestDocumentUpload
-      parameters:
-      - description: UUID of the service item to use.
-        in: path
-        name: mtoServiceItemID
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/createExcessWeightRecord_request'
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UploadWithOmissions'
-          description: Successfully created upload of digital file.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: createServiceRequestDocumentUpload
-      tags:
-      - mtoServiceItem
-  /payment-requests:
-    post:
-      description: |
-        Creates a new instance of a paymentRequest and is assigned the status `PENDING`.
-        A move task order can have multiple payment requests, and
-        a final payment request can be marked using boolean `isFinal`.
-
-        If a `PENDING` payment request is recalculated,
-        a new payment request is created and the original request is
-        marked with the status `DEPRECATED`.
-
-        **NOTE**: In order to create a payment request for most service items, the shipment *must*
-        be updated with the `PrimeActualWeight` value via [updateMTOShipment](#operation/updateMTOShipment).
-
-        **FSC - Fuel Surcharge** service items require `ActualPickupDate` to be updated on the shipment.
-
-        A service item can be on several payment requests in the case of partial payment requests and payments.
-
-        In the request, if no params are necessary, then just the `serviceItem` `id` is required. For example:
-        ```json
-        {
-          "isFinal": false,
-          "moveTaskOrderID": "uuid",
-          "serviceItems": [
-            {
-              "id": "uuid",
-            },
-            {
-              "id": "uuid",
-              "params": [
-                {
-                  "key": "Service Item Parameter Name",
-                  "value": "Service Item Parameter Value"
-                }
-              ]
-            }
-          ],
-          "pointOfContact": "string"
-        }
-        ```
-
-        SIT Service Items & Accepted Payment Request Parameters:
-        ---
-        If `WeightBilled` is not provided then the full shipment weight (`PrimeActualWeight`) will be considered in the calculation.
-
-        **NOTE**: Diversions have a unique calcuation for payment requests without a `WeightBilled` parameter.
-
-        If you created a payment request for a diversion and `WeightBilled` is not provided, then the following will be used in the calculation:
-        - The lowest shipment weight (`PrimeActualWeight`) found in the diverted shipment chain.
-        - The lowest reweigh weight found in the diverted shipment chain.
-
-        The diverted shipment chain is created by referencing the `diversion` boolean, `divertedFromShipmentId` UUID, and matching destination to pickup addresses.
-        If the chain cannot be established it will fall back to the `PrimeActualWeight` of the current shipment. This is utilized because diverted shipments are all one single shipment, but going to different locations.
-        The lowest weight found is the true shipment weight, and thus we search the chain of shipments for the lowest weight found.
-
-        **DOFSIT - Domestic origin 1st day SIT**
-        ```json
-          "params": [
-            {
-              "key": "WeightBilled",
-              "value": "integer"
-            }
-          ]
-        ```
-
-        **DOASIT - Domestic origin add'l SIT** *(SITPaymentRequestStart & SITPaymentRequestEnd are **REQUIRED**)*
-        *To create a paymentRequest for this service item, the `SITPaymentRequestStart` and `SITPaymentRequestEnd` dates must not overlap previously requested SIT dates.*
-        ```json
-          "params": [
-            {
-              "key": "WeightBilled",
-              "value": "integer"
-            },
-            {
-              "key": "SITPaymentRequestStart",
-              "value": "date"
-            },
-            {
-              "key": "SITPaymentRequestEnd",
-              "value": "date"
-            }
-          ]
-        ```
-
-        **DOPSIT - Domestic origin SIT pickup**
-        ```json
-          "params": [
-            {
-              "key": "WeightBilled",
-              "value": "integer"
-            }
-          ]
-        ```
-
-        **DOSHUT - Domestic origin shuttle service**
-        ```json
-          "params": [
-            {
-              "key": "WeightBilled",
-              "value": "integer"
-            }
-          ]
-        ```
-
-        **DDFSIT - Domestic destination 1st day SIT**
-        ```json
-          "params": [
-            {
-              "key": "WeightBilled",
-              "value": "integer"
-            }
-          ]
-        ```
-
-        **DDASIT - Domestic destination add'l SIT** *(SITPaymentRequestStart & SITPaymentRequestEnd are **REQUIRED**)*
-        *To create a paymentRequest for this service item, the `SITPaymentRequestStart` and `SITPaymentRequestEnd` dates must not overlap previously requested SIT dates.*
-        ```json
-          "params": [
-            {
-              "key": "WeightBilled",
-              "value": "integer"
-            },
-            {
-              "key": "SITPaymentRequestStart",
-              "value": "date"
-            },
-            {
-              "key": "SITPaymentRequestEnd",
-              "value": "date"
-            }
-          ]
-        ```
-
-        **DDDSIT - Domestic destination SIT delivery**
-        *To create a paymentRequest for this service item, it must first have a final address set via [updateMTOServiceItem](#operation/updateMTOServiceItem).*
-        ```json
-          "params": [
-            {
-              "key": "WeightBilled",
-              "value": "integer"
-            }
-          ]
-        ```
-
-        **DDSHUT - Domestic destination shuttle service**
-        ```json
-          "params": [
-            {
-              "key": "WeightBilled",
-              "value": "integer"
-            }
-          ]
-        ```
-        ---
-      operationId: createPaymentRequest
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePaymentRequest'
-        required: false
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentRequest'
-          description: Successfully created a paymentRequest object.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: Request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: createPaymentRequest
-      tags:
-      - paymentRequest
-      x-codegen-request-body-name: body
-  /payment-requests/{paymentRequestID}/uploads:
-    post:
-      description: |
-        ### Functionality
-        This endpoint **uploads** a Proof of Service document for a PaymentRequest.
-
-        The PaymentRequest should already exist.
-
-        Optional key of **isWeightTicket** indicates if the document is a weight ticket or not.
-        This will be used for partial and full deliveries and makes it easier for the Task Invoicing Officers to locate and review service item documents.
-        If left empty, it will assume it is NOT a weight ticket.
-
-        The formdata in the body of the POST request that is sent should look like this if it IS a weight ticket being attached to an existing payment request:
-          ```json
-          {
-            "file": "filePath",
-            "isWeightTicket": true
-          }
-          ```
-          If the proof of service doc is NOT a weight ticket, it will look like this - or you can leave it empty:
-          ```json
-          {
-            "file": "filePath",
-            "isWeightTicket": false
-          }
-          ```
-          ```json
-          {
-            "file": "filePath",
-          }
-          ```
-
-        PaymentRequests are created with the [createPaymentRequest](#operation/createPaymentRequest) endpoint.
-      operationId: createUpload
-      parameters:
-      - description: UUID of payment request to use.
-        in: path
-        name: paymentRequestID
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/createUpload_request'
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UploadWithOmissions'
-          description: Successfully created upload of digital file.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: createUpload
-      tags:
-      - paymentRequest
-  /sit-address-updates:
-    post:
-      description: |
-        **Functionality:**
-        Creates an update request for a SIT service item's final delivery address.
-        A newly created update request is assigned the status 'REQUESTED'  if the change in address
-        is > 50 miles and automatically approved otherwise.
-
-        **Limitations:**
-        The update can be requested for APPROVED SIT service items only.
-        Only ONE request is allowed per approved SIT service item.
-
-        **DEPRECATION ON AUGUST 5TH, 2024**
-        Following deprecation, when updating a service item's final delivery address, you will need to update the shipment's destination address. This will update the destination SIT service items' final delivery address upon approval.
-        For `APPROVED` shipments, you can use [updateShipmentDestinationAddress](#mtoShipment/updateShipmentDestinationAddress)
-        For shipments in any other status, you can use [updateMTOShipmentAddress](#mtoShipment/updateMTOShipmentAddress)
-      operationId: createSITAddressUpdateRequest
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateSITAddressUpdateRequest'
-        required: false
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SitAddressUpdate'
-          description: Succesfully created a SIT address update request.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request could not be processed because of conflict in the
-            current state of the resource.
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: createSITAddressUpdateRequest
-      tags:
-      - sitAddressUpdate
-      x-codegen-request-body-name: body
-  /moves/{locator}/documents:
-    get:
-      description: |
-        ### Functionality
-        This endpoint downloads all uploaded move order documentations into one download file by locator.
-
-        ### Errors
-        * The move must be in need counseling state.
-        * The move client's origin duty location must not currently have gov counseling.
-      operationId: downloadMoveOrder
-      parameters:
-      - description: the locator code for move order to be downloaded
-        in: path
-        name: locator
-        required: true
-        schema:
-          type: string
-      - description: upload type
-        in: query
-        name: type
-        schema:
-          default: ALL
-          enum:
-          - ALL
-          - ORDERS
-          - AMENDMENTS
-          type: string
-      responses:
-        "200":
-          content:
-            application/pdf:
-              schema:
-                format: binary
-                type: string
-          description: Move Order PDF
-          headers:
-            Content-Disposition:
-              description: File name to download
-              schema:
-                type: string
-        "400":
-          content:
-            application/pdf:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request payload is invalid.
-        "403":
-          content:
-            application/pdf:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The request was denied.
-        "404":
-          content:
-            application/pdf:
-              schema:
-                $ref: '#/components/schemas/ClientError'
-          description: The requested resource wasn't found.
-        "422":
-          content:
-            application/pdf:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-          description: "The request was unprocessable, likely due to bad input from\
-            \ the requester."
-        "500":
-          content:
-            application/pdf:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: A server error occurred.
-      summary: Downloads move order as a PDF
-      tags:
-      - moveTaskOrder
 components:
   parameters:
     ifMatch:
@@ -1963,24 +250,18 @@ components:
       schema:
         type: string
   responses:
-    InvalidRequest:
-      content:
-        '*/*':
-          schema:
-            $ref: '#/components/schemas/ClientError'
-      description: The request payload is invalid.
     ServerError:
       content:
         '*/*':
           schema:
             $ref: '#/components/schemas/Error'
       description: A server error occurred.
-    NotImplemented:
+    InvalidRequest:
       content:
         '*/*':
           schema:
-            $ref: '#/components/schemas/Error'
-      description: The requested feature is still in development.
+            $ref: '#/components/schemas/ClientError'
+      description: The request payload is invalid.
     PreconditionFailed:
       content:
         '*/*':
@@ -2007,1283 +288,7 @@ components:
             $ref: '#/components/schemas/ValidationError'
       description: "The request was unprocessable, likely due to bad input from the\
         \ requester."
-    Conflict:
-      content:
-        '*/*':
-          schema:
-            $ref: '#/components/schemas/ClientError'
-      description: The request could not be processed because of conflict in the current
-        state of the resource.
   schemas:
-    Amendments:
-      description: |
-        Metadata outlining number of amendments for given order.
-      example:
-        total: 0
-        availableSince: 6
-      properties:
-        total:
-          description: The total count of amendments.
-          type: integer
-        availableSince:
-          description: The total count of amendments available since specified time.
-          type: integer
-      required:
-      - availableSince
-      - total
-      type: object
-    CreateMTOShipment:
-      example:
-        ppmShipment:
-          proGearWeight: 0
-          sitExpected: true
-          destinationAddress: "{}"
-          estimatedWeight: 4200
-          pickupAddress: "{}"
-          sitEstimatedWeight: 2000
-          hasProGear: true
-          sitLocation: "{}"
-          sitEstimatedEntryDate: 2000-01-23
-          sitEstimatedDepartureDate: 2000-01-23
-          spouseProGearWeight: 6
-          expectedDepartureDate: 2000-01-23
-        moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-        primeEstimatedWeight: 4500
-        destinationAddress: "{}"
-        counselorRemarks: counselor approved
-        requestedPickupDate: 2000-01-23
-        agents:
-        - createdAt: 2000-01-23T04:56:07.000+00:00
-          firstName: firstName
-          lastName: lastName
-          agentType: RELEASING_AGENT
-          phone: phone
-          mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          eTag: eTag
-          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          email: email
-          updatedAt: 2000-01-23T04:56:07.000+00:00
-        - createdAt: 2000-01-23T04:56:07.000+00:00
-          firstName: firstName
-          lastName: lastName
-          agentType: RELEASING_AGENT
-          phone: phone
-          mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          eTag: eTag
-          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          email: email
-          updatedAt: 2000-01-23T04:56:07.000+00:00
-        shipmentType: HHG
-        mtoServiceItems:
-        - moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          serviceRequestDocuments:
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          reServiceName: reServiceName
-          mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          eTag: eTag
-          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          modelType: MTOServiceItemBasic
-          rejectionReason: item was too heavy
-          status: SUBMITTED
-        - moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          serviceRequestDocuments:
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          reServiceName: reServiceName
-          mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          eTag: eTag
-          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          modelType: MTOServiceItemBasic
-          rejectionReason: item was too heavy
-          status: SUBMITTED
-        pickupAddress: "{}"
-        diversion: true
-        customerRemarks: handle with care
-        pointOfContact: pointOfContact
-      properties:
-        moveTaskOrderID:
-          description: The ID of the move this new shipment is for.
-          example: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          format: uuid
-          type: string
-        requestedPickupDate:
-          description: |
-            The customer's preferred pickup date. Other dates, such as required delivery date and (outside MilMove) the pack date, are derived from this date.
-          format: date
-          nullable: true
-          type: string
-        primeEstimatedWeight:
-          description: |
-            The estimated weight of this shipment, determined by the movers during the pre-move survey. This value **can only be updated once.** If there was an issue with estimating the weight and a mistake was made, the Prime contractor will need to contact the TOO to change it.
-          example: 4500
-          minimum: 1
-          nullable: true
-          type: integer
-        customerRemarks:
-          description: |
-            The customer can use the customer remarks field to inform the services counselor and the movers about any
-            special circumstances for this shipment. Typical examples:
-              * bulky or fragile items,
-              * weapons,
-              * access info for their address.
-
-            Customer enters this information during onboarding. Optional field.
-          example: handle with care
-          nullable: true
-          type: string
-        agents:
-          description: |
-            A list of the agents for a shipment. Agents are the people who the Prime contractor recognize as permitted to release (in the case of pickup) or receive (on delivery) a shipment.
-          items:
-            $ref: '#/components/schemas/MTOAgent'
-          maxItems: 2
-          type: array
-        mtoServiceItems:
-          description: A list of service items connected to this shipment.
-          items:
-            $ref: '#/components/schemas/MTOServiceItem'
-          type: array
-        pickupAddress:
-          allOf:
-          - $ref: '#/components/schemas/Address'
-          description: The address where the movers should pick up this shipment.
-          type: object
-        destinationAddress:
-          allOf:
-          - $ref: '#/components/schemas/Address'
-          description: Where the movers should deliver this shipment.
-          type: object
-        shipmentType:
-          $ref: '#/components/schemas/MTOShipmentType'
-        diversion:
-          description: |
-            This value indicates whether or not this shipment is part of a diversion. If yes, the shipment can be either the starting or ending segment of the diversion.
-          type: boolean
-        pointOfContact:
-          description: |
-            Email or ID of the person who will be contacted in the event of questions or concerns about this update. May be the person performing the update, or someone else working with the Prime contractor.
-          type: string
-        counselorRemarks:
-          example: counselor approved
-          nullable: true
-          type: string
-        ppmShipment:
-          $ref: '#/components/schemas/CreatePPMShipment'
-      required:
-      - moveTaskOrderID
-      - shipmentType
-      type: object
-    CreatePPMShipment:
-      description: "Creation object containing the `PPM` shipmentType specific data,\
-        \ not used for other shipment types."
-      example:
-        proGearWeight: 0
-        sitExpected: true
-        destinationAddress: "{}"
-        estimatedWeight: 4200
-        pickupAddress: "{}"
-        sitEstimatedWeight: 2000
-        hasProGear: true
-        sitLocation: "{}"
-        sitEstimatedEntryDate: 2000-01-23
-        sitEstimatedDepartureDate: 2000-01-23
-        spouseProGearWeight: 6
-        expectedDepartureDate: 2000-01-23
-      properties:
-        expectedDepartureDate:
-          description: |
-            Date the customer expects to begin moving from their origin.
-          format: date
-          type: string
-        pickupAddress:
-          allOf:
-          - $ref: '#/components/schemas/Address'
-          description: The address of the origin location where goods are being moved
-            from.
-          type: object
-        destinationAddress:
-          allOf:
-          - $ref: '#/components/schemas/Address'
-          description: The address of the destination location where goods are being
-            delivered to.
-          type: object
-        sitExpected:
-          description: |
-            Captures whether some or all of the PPM shipment will require temporary storage at the origin or destination.
-
-            Must be set to `true` when providing `sitLocation`, `sitEstimatedWeight`, `sitEstimatedEntryDate`, and `sitEstimatedDepartureDate` values to calculate the `sitEstimatedCost`.
-          type: boolean
-        sitLocation:
-          allOf:
-          - $ref: '#/components/schemas/SITLocationType'
-          - type: object
-            x-nullable: true
-          type: object
-        sitEstimatedWeight:
-          description: The estimated weight of the goods being put into storage in
-            pounds.
-          example: 2000
-          nullable: true
-          type: integer
-        sitEstimatedEntryDate:
-          description: The date that goods will first enter the storage location.
-          format: date
-          nullable: true
-          type: string
-        sitEstimatedDepartureDate:
-          description: The date that goods will exit the storage location.
-          format: date
-          nullable: true
-          type: string
-        estimatedWeight:
-          description: The estimated weight of the PPM shipment goods being moved
-            in pounds.
-          example: 4200
-          type: integer
-        hasProGear:
-          description: |
-            Indicates whether PPM shipment has pro gear for themselves or their spouse.
-          type: boolean
-        proGearWeight:
-          description: The estimated weight of the pro-gear being moved belonging
-            to the service member in pounds.
-          nullable: true
-          type: integer
-        spouseProGearWeight:
-          description: The estimated weight of the pro-gear being moved belonging
-            to a spouse in pounds.
-          nullable: true
-          type: integer
-      required:
-      - estimatedWeight
-      - expectedDepartureDate
-      - hasProGear
-      - sitExpected
-      type: object
-    CreatePaymentRequest:
-      example:
-        moveTaskOrderID: c56a4180-65aa-42ec-a945-5fd21dec0538
-        isFinal: false
-        serviceItems:
-        - eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          params:
-          - value: Service Item Parameter Value
-            key: Service Item Parameter Name
-          - value: Service Item Parameter Value
-            key: Service Item Parameter Name
-        - eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          params:
-          - value: Service Item Parameter Value
-            key: Service Item Parameter Name
-          - value: Service Item Parameter Value
-            key: Service Item Parameter Name
-        pointOfContact: pointOfContact
-      properties:
-        isFinal:
-          default: false
-          type: boolean
-        moveTaskOrderID:
-          example: c56a4180-65aa-42ec-a945-5fd21dec0538
-          format: uuid
-          type: string
-        serviceItems:
-          items:
-            $ref: '#/components/schemas/ServiceItem'
-          minItems: 1
-          type: array
-        pointOfContact:
-          description: Email or id of a contact person for this update.
-          type: string
-      required:
-      - moveTaskOrderID
-      - serviceItems
-      type: object
-    CreateSITExtension:
-      description: CreateSITExtension contains the fields required for the prime to
-        create a SIT Extension request.
-      example:
-        requestedDays: 30
-        requestReason: SERIOUS_ILLNESS_MEMBER
-        contractorRemarks: We need SIT additional days. The customer has not found
-          a house yet.
-      properties:
-        requestReason:
-          enum:
-          - SERIOUS_ILLNESS_MEMBER
-          - SERIOUS_ILLNESS_DEPENDENT
-          - IMPENDING_ASSIGNEMENT
-          - DIRECTED_TEMPORARY_DUTY
-          - NONAVAILABILITY_OF_CIVILIAN_HOUSING
-          - AWAITING_COMPLETION_OF_RESIDENCE
-          - OTHER
-          type: string
-        contractorRemarks:
-          example: We need SIT additional days. The customer has not found a house
-            yet.
-          type: string
-        requestedDays:
-          example: 30
-          minimum: 1
-          type: integer
-      required:
-      - contractorRemarks
-      - requestReason
-      - requestedDays
-      type: object
-    Error:
-      example:
-        instance: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        detail: detail
-        title: title
-      properties:
-        title:
-          type: string
-        detail:
-          type: string
-        instance:
-          format: uuid
-          type: string
-      required:
-      - detail
-      - title
-      type: object
-    ListMove:
-      description: |
-        An abbreviated definition for a move, without all the nested information (shipments, service items, etc). Used to fetch a list of moves more efficiently.
-      example:
-        moveCode: HYXFJF
-        createdAt: 2000-01-23T04:56:07.000+00:00
-        orderID: c56a4180-65aa-42ec-a945-5fd21dec0538
-        ppmType: FULL
-        amendments:
-          total: 0
-          availableSince: 6
-        eTag: eTag
-        id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-        referenceId: 1001-3456
-        availableToPrimeAt: 2000-01-23T04:56:07.000+00:00
-        updatedAt: 2000-01-23T04:56:07.000+00:00
-      properties:
-        id:
-          example: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          format: uuid
-          type: string
-        moveCode:
-          example: HYXFJF
-          readOnly: true
-          type: string
-        createdAt:
-          format: date-time
-          readOnly: true
-          type: string
-        orderID:
-          example: c56a4180-65aa-42ec-a945-5fd21dec0538
-          format: uuid
-          type: string
-        referenceId:
-          example: 1001-3456
-          type: string
-        availableToPrimeAt:
-          format: date-time
-          nullable: true
-          readOnly: true
-          type: string
-        updatedAt:
-          format: date-time
-          readOnly: true
-          type: string
-        ppmType:
-          enum:
-          - FULL
-          - PARTIAL
-          type: string
-        eTag:
-          readOnly: true
-          type: string
-        amendments:
-          $ref: '#/components/schemas/Amendments'
-      type: object
-    ListMoves:
-      items:
-        $ref: '#/components/schemas/ListMove'
-      type: array
-    MoveTaskOrder:
-      example:
-        moveCode: HYXFJF
-        paymentRequests:
-        - moveTaskOrderID: c56a4180-65aa-42ec-a945-5fd21dec0538
-          paymentRequestNumber: 1234-5678-1
-          proofOfServiceDocs:
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          recalculationOfPaymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
-          eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          isFinal: false
-          rejectionReason: documentation was incomplete
-          status: PENDING
-          paymentServiceItems:
-          - paymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            priceCents: 6
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            rejectionReason: documentation was incomplete
-            paymentServiceItemParams:
-            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-              origin: PRIME
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              type: STRING
-              value: "3025"
-              key: ActualPickupDate
-            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-              origin: PRIME
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              type: STRING
-              value: "3025"
-              key: ActualPickupDate
-            referenceID: 1234-5678-c56a4180
-            mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            status: REQUESTED
-          - paymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            priceCents: 6
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            rejectionReason: documentation was incomplete
-            paymentServiceItemParams:
-            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-              origin: PRIME
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              type: STRING
-              value: "3025"
-              key: ActualPickupDate
-            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-              origin: PRIME
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              type: STRING
-              value: "3025"
-              key: ActualPickupDate
-            referenceID: 1234-5678-c56a4180
-            mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            status: REQUESTED
-        - moveTaskOrderID: c56a4180-65aa-42ec-a945-5fd21dec0538
-          paymentRequestNumber: 1234-5678-1
-          proofOfServiceDocs:
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          recalculationOfPaymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
-          eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          isFinal: false
-          rejectionReason: documentation was incomplete
-          status: PENDING
-          paymentServiceItems:
-          - paymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            priceCents: 6
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            rejectionReason: documentation was incomplete
-            paymentServiceItemParams:
-            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-              origin: PRIME
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              type: STRING
-              value: "3025"
-              key: ActualPickupDate
-            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-              origin: PRIME
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              type: STRING
-              value: "3025"
-              key: ActualPickupDate
-            referenceID: 1234-5678-c56a4180
-            mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            status: REQUESTED
-          - paymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            priceCents: 6
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            rejectionReason: documentation was incomplete
-            paymentServiceItemParams:
-            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-              origin: PRIME
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              type: STRING
-              value: "3025"
-              key: ActualPickupDate
-            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-              origin: PRIME
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              type: STRING
-              value: "3025"
-              key: ActualPickupDate
-            referenceID: 1234-5678-c56a4180
-            mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            status: REQUESTED
-        orderID: c56a4180-65aa-42ec-a945-5fd21dec0538
-        ppmType: PARTIAL
-        referenceId: 1001-3456
-        excessWeightAcknowledgedAt: 2000-01-23T04:56:07.000+00:00
-        createdAt: 2000-01-23T04:56:07.000+00:00
-        mtoShipments:
-        - sitExtensions:
-          - createdAt: 2000-01-23T04:56:07.000+00:00
-            requestedDays: 30
-            requestReason: SERIOUS_ILLNESS_MEMBER
-            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            approvedDays: 30
-            officeRemarks: officeRemarks
-            contractorRemarks: We need SIT additional days. The customer has not found
-              a house yet.
-            status: PENDING
-            decisionDate: 2000-01-23T04:56:07.000+00:00
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          - createdAt: 2000-01-23T04:56:07.000+00:00
-            requestedDays: 30
-            requestReason: SERIOUS_ILLNESS_MEMBER
-            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            approvedDays: 30
-            officeRemarks: officeRemarks
-            contractorRemarks: We need SIT additional days. The customer has not found
-              a house yet.
-            status: PENDING
-            decisionDate: 2000-01-23T04:56:07.000+00:00
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          secondaryDeliveryAddress: "{}"
-          ppmShipment:
-            hasProGear: true
-            actualMoveDate: 2000-01-23
-            reviewedAt: 2000-01-23T04:56:07.000+00:00
-            sitEstimatedCost: 2
-            createdAt: 2000-01-23T04:56:07.000+00:00
-            estimatedIncentive: 7
-            advanceAmountRequested: 9
-            sitEstimatedWeight: 2000
-            hasRequestedAdvance: true
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            submittedAt: 2000-01-23T04:56:07.000+00:00
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-            actualPickupPostalCode: "90210"
-            sitExpected: true
-            advanceAmountReceived: 3
-            approvedAt: 2000-01-23T04:56:07.000+00:00
-            sitEstimatedDepartureDate: 2000-01-23
-            expectedDepartureDate: 2000-01-23
-            proGearWeight: 5
-            hasReceivedAdvance: true
-            estimatedWeight: 4200
-            shipmentId: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            sitLocation: "{}"
-            sitEstimatedEntryDate: 2000-01-23
-            spouseProGearWeight: 2
-            status: DRAFT
-            actualDestinationPostalCode: "90210"
-          moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          primeEstimatedWeight: 4500
-          destinationAddress: "{}"
-          secondaryPickupAddress: "{}"
-          counselorRemarks: handle with care
-          requestedPickupDate: 2000-01-23
-          scheduledDeliveryDate: 2000-01-23
-          shipmentType: HHG
-          createdAt: 2000-01-23T04:56:07.000+00:00
-          originSitAuthEndDate: 2000-01-23
-          primeEstimatedWeightRecordedDate: 2000-01-23
-          storageFacility:
-            address:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            phone: phone
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            facilityName: facilityName
-            lotNumber: lotNumber
-            email: email
-          deliveryAddressUpdate:
-            newSitDistanceBetween: 88
-            sitOriginalAddress:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            originalAddress:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            shipmentID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            oldSitDistanceBetween: 50
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            officeRemarks: This is an office remark
-            contractorRemarks: This is a contractor remark
-            newAddress:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            status: REQUESTED
-          scheduledPickupDate: 2000-01-23
-          destinationType: OTHER_THAN_AUTHORIZED
-          eTag: eTag
-          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          diversionReason: diversionReason
-          updatedAt: 2000-01-23T04:56:07.000+00:00
-          pointOfContact: pointOfContact
-          actualDeliveryDate: 2000-01-23
-          actualSpouseProGearWeight: 5
-          actualPickupDate: 2000-01-23
-          primeActualWeight: 4500
-          agents:
-          - createdAt: 2000-01-23T04:56:07.000+00:00
-            firstName: firstName
-            lastName: lastName
-            agentType: RELEASING_AGENT
-            phone: phone
-            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            email: email
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          - createdAt: 2000-01-23T04:56:07.000+00:00
-            firstName: firstName
-            lastName: lastName
-            agentType: RELEASING_AGENT
-            phone: phone
-            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            email: email
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          approvedDate: 2000-01-23
-          requiredDeliveryDate: 2000-01-23
-          actualProGearWeight: 1
-          reweigh:
-            requestedBy: CUSTOMER
-            createdAt: 2000-01-23T04:56:07.000+00:00
-            requestedAt: 2000-01-23T04:56:07.000+00:00
-            shipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            weight: 2000
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            verificationProvidedAt: 2000-01-23T04:56:07.000+00:00
-            verificationReason: The reweigh was not performed due to some justification
-              provided by the Prime
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          pickupAddress: "{}"
-          destinationSitAuthEndDate: 2000-01-23
-          requestedDeliveryDate: 2000-01-23
-          diversion: true
-          customerRemarks: handle with care
-          firstAvailableDeliveryDate: 2000-01-23
-          ntsRecordedWeight: 4500
-          status: SUBMITTED
-        - sitExtensions:
-          - createdAt: 2000-01-23T04:56:07.000+00:00
-            requestedDays: 30
-            requestReason: SERIOUS_ILLNESS_MEMBER
-            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            approvedDays: 30
-            officeRemarks: officeRemarks
-            contractorRemarks: We need SIT additional days. The customer has not found
-              a house yet.
-            status: PENDING
-            decisionDate: 2000-01-23T04:56:07.000+00:00
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          - createdAt: 2000-01-23T04:56:07.000+00:00
-            requestedDays: 30
-            requestReason: SERIOUS_ILLNESS_MEMBER
-            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            approvedDays: 30
-            officeRemarks: officeRemarks
-            contractorRemarks: We need SIT additional days. The customer has not found
-              a house yet.
-            status: PENDING
-            decisionDate: 2000-01-23T04:56:07.000+00:00
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          secondaryDeliveryAddress: "{}"
-          ppmShipment:
-            hasProGear: true
-            actualMoveDate: 2000-01-23
-            reviewedAt: 2000-01-23T04:56:07.000+00:00
-            sitEstimatedCost: 2
-            createdAt: 2000-01-23T04:56:07.000+00:00
-            estimatedIncentive: 7
-            advanceAmountRequested: 9
-            sitEstimatedWeight: 2000
-            hasRequestedAdvance: true
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            submittedAt: 2000-01-23T04:56:07.000+00:00
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-            actualPickupPostalCode: "90210"
-            sitExpected: true
-            advanceAmountReceived: 3
-            approvedAt: 2000-01-23T04:56:07.000+00:00
-            sitEstimatedDepartureDate: 2000-01-23
-            expectedDepartureDate: 2000-01-23
-            proGearWeight: 5
-            hasReceivedAdvance: true
-            estimatedWeight: 4200
-            shipmentId: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            sitLocation: "{}"
-            sitEstimatedEntryDate: 2000-01-23
-            spouseProGearWeight: 2
-            status: DRAFT
-            actualDestinationPostalCode: "90210"
-          moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          primeEstimatedWeight: 4500
-          destinationAddress: "{}"
-          secondaryPickupAddress: "{}"
-          counselorRemarks: handle with care
-          requestedPickupDate: 2000-01-23
-          scheduledDeliveryDate: 2000-01-23
-          shipmentType: HHG
-          createdAt: 2000-01-23T04:56:07.000+00:00
-          originSitAuthEndDate: 2000-01-23
-          primeEstimatedWeightRecordedDate: 2000-01-23
-          storageFacility:
-            address:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            phone: phone
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            facilityName: facilityName
-            lotNumber: lotNumber
-            email: email
-          deliveryAddressUpdate:
-            newSitDistanceBetween: 88
-            sitOriginalAddress:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            originalAddress:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            shipmentID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            oldSitDistanceBetween: 50
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            officeRemarks: This is an office remark
-            contractorRemarks: This is a contractor remark
-            newAddress:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            status: REQUESTED
-          scheduledPickupDate: 2000-01-23
-          destinationType: OTHER_THAN_AUTHORIZED
-          eTag: eTag
-          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          diversionReason: diversionReason
-          updatedAt: 2000-01-23T04:56:07.000+00:00
-          pointOfContact: pointOfContact
-          actualDeliveryDate: 2000-01-23
-          actualSpouseProGearWeight: 5
-          actualPickupDate: 2000-01-23
-          primeActualWeight: 4500
-          agents:
-          - createdAt: 2000-01-23T04:56:07.000+00:00
-            firstName: firstName
-            lastName: lastName
-            agentType: RELEASING_AGENT
-            phone: phone
-            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            email: email
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          - createdAt: 2000-01-23T04:56:07.000+00:00
-            firstName: firstName
-            lastName: lastName
-            agentType: RELEASING_AGENT
-            phone: phone
-            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            email: email
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          approvedDate: 2000-01-23
-          requiredDeliveryDate: 2000-01-23
-          actualProGearWeight: 1
-          reweigh:
-            requestedBy: CUSTOMER
-            createdAt: 2000-01-23T04:56:07.000+00:00
-            requestedAt: 2000-01-23T04:56:07.000+00:00
-            shipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            weight: 2000
-            eTag: eTag
-            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            verificationProvidedAt: 2000-01-23T04:56:07.000+00:00
-            verificationReason: The reweigh was not performed due to some justification
-              provided by the Prime
-            updatedAt: 2000-01-23T04:56:07.000+00:00
-          pickupAddress: "{}"
-          destinationSitAuthEndDate: 2000-01-23
-          requestedDeliveryDate: 2000-01-23
-          diversion: true
-          customerRemarks: handle with care
-          firstAvailableDeliveryDate: 2000-01-23
-          ntsRecordedWeight: 4500
-          status: SUBMITTED
-        excessWeightUploadId: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        mtoServiceItems:
-        - moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          serviceRequestDocuments:
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          reServiceName: reServiceName
-          mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          eTag: eTag
-          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          modelType: MTOServiceItemBasic
-          rejectionReason: item was too heavy
-          status: SUBMITTED
-        - moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          serviceRequestDocuments:
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          - uploads:
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-            - createdAt: 2000-01-23T04:56:07.000+00:00
-              filename: filename.pdf
-              bytes: 0
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              contentType: application/pdf
-              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-              status: INFECTED
-              updatedAt: 2000-01-23T04:56:07.000+00:00
-          reServiceName: reServiceName
-          mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          eTag: eTag
-          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          modelType: MTOServiceItemBasic
-          rejectionReason: item was too heavy
-          status: SUBMITTED
-        ppmEstimatedWeight: 4
-        eTag: eTag
-        id: a502b4f1-b9c4-4faf-8bdd-68292501bf26
-        availableToPrimeAt: 2000-01-23T04:56:07.000+00:00
-        order:
-          orderNumber: orderNumber
-          linesOfAccounting: linesOfAccounting
-          entitlement:
-            proGearWeightSpouse: 500
-            authorizedWeight: 2000
-            proGearWeight: 2000
-            nonTemporaryStorage: false
-            organizationalClothingAndIndividualEquipment: false
-            gunSafe: false
-            privatelyOwnedVehicle: false
-            requiredMedicalEquipmentWeight: 500
-            storageInTransit: 90
-            totalWeight: 500
-            totalDependents: 2
-            eTag: eTag
-            id: 571008b1-b0de-454d-b843-d71be9f02c04
-            dependentsAuthorized: true
-          destinationDutyLocation:
-            address:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            name: Fort Bragg North Station
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            addressID: c56a4180-65aa-42ec-a945-5fd21dec0538
-          originDutyLocation:
-            address:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-            name: Fort Bragg North Station
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            addressID: c56a4180-65aa-42ec-a945-5fd21dec0538
-          originDutyLocationGBLOC: KKFA
-          customerID: c56a4180-65aa-42ec-a945-5fd21dec0538
-          rank: E_5
-          eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          reportByDate: 2000-01-23
-          ordersType: PERMANENT_CHANGE_OF_STATION
-          customer:
-            dodID: dodID
-            emplid: emplid
-            firstName: Vanya
-            lastName: Petrovna
-            phone: phone
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            userID: c56a4180-65aa-42ec-a945-5fd21dec0538
-            branch: COAST_GUARD
-            email: fake@example.com
-            currentAddress:
-              country: USA
-              city: Anytown
-              postalCode: "90210"
-              streetAddress1: 123 Main Ave
-              county: LOS ANGELES
-              streetAddress2: Apartment 9000
-              streetAddress3: Montmârtre
-              eTag: eTag
-              id: c56a4180-65aa-42ec-a945-5fd21dec0538
-              state: AL
-        updatedAt: 2000-01-23T04:56:07.000+00:00
-        primeCounselingCompletedAt: 2000-01-23T04:56:07.000+00:00
-        excessWeightQualifiedAt: 2000-01-23T04:56:07.000+00:00
-      properties:
-        id:
-          example: a502b4f1-b9c4-4faf-8bdd-68292501bf26
-          format: uuid
-          type: string
-        moveCode:
-          example: HYXFJF
-          readOnly: true
-          type: string
-        createdAt:
-          format: date-time
-          readOnly: true
-          type: string
-        orderID:
-          example: c56a4180-65aa-42ec-a945-5fd21dec0538
-          format: uuid
-          type: string
-        order:
-          $ref: '#/components/schemas/Order'
-        referenceId:
-          example: 1001-3456
-          type: string
-        availableToPrimeAt:
-          format: date-time
-          nullable: true
-          readOnly: true
-          type: string
-        updatedAt:
-          format: date-time
-          readOnly: true
-          type: string
-        primeCounselingCompletedAt:
-          format: date-time
-          nullable: true
-          readOnly: true
-          type: string
-        paymentRequests:
-          items:
-            $ref: '#/components/schemas/PaymentRequest'
-          type: array
-        mtoServiceItems:
-          items:
-            $ref: '#/components/schemas/MTOServiceItem'
-          type: array
-        mtoShipments:
-          description: A list of shipments without their associated service items.
-          items:
-            $ref: '#/components/schemas/MTOShipmentWithoutServiceItems'
-          type: array
-        ppmType:
-          enum:
-          - PARTIAL
-          - FULL
-          type: string
-        ppmEstimatedWeight:
-          type: integer
-        excessWeightQualifiedAt:
-          format: date-time
-          nullable: true
-          readOnly: true
-          type: string
-          x-omitempty: false
-        excessWeightAcknowledgedAt:
-          format: date-time
-          nullable: true
-          readOnly: true
-          type: string
-          x-omitempty: false
-        excessWeightUploadId:
-          format: uuid
-          nullable: true
-          readOnly: true
-          type: string
-          x-omitempty: false
-        eTag:
-          readOnly: true
-          type: string
-      required:
-      - mtoServiceItems
-      - mtoShipments
-      - paymentRequests
-      type: object
     MTOServiceItemBasic:
       allOf:
       - $ref: '#/components/schemas/MTOServiceItem'
@@ -3504,6 +509,160 @@ components:
         - reason
         type: object
       description: Describes a shuttle service item.
+    CreateMTOShipment:
+      properties:
+        moveTaskOrderID:
+          description: The ID of the move this new shipment is for.
+          example: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          format: uuid
+          type: string
+        requestedPickupDate:
+          description: |
+            The customer's preferred pickup date. Other dates, such as required delivery date and (outside MilMove) the pack date, are derived from this date.
+          format: date
+          nullable: true
+          type: string
+        primeEstimatedWeight:
+          description: |
+            The estimated weight of this shipment, determined by the movers during the pre-move survey. This value **can only be updated once.** If there was an issue with estimating the weight and a mistake was made, the Prime contractor will need to contact the TOO to change it.
+          example: 4500
+          minimum: 1
+          nullable: true
+          type: integer
+        customerRemarks:
+          description: |
+            The customer can use the customer remarks field to inform the services counselor and the movers about any
+            special circumstances for this shipment. Typical examples:
+              * bulky or fragile items,
+              * weapons,
+              * access info for their address.
+
+            Customer enters this information during onboarding. Optional field.
+          example: handle with care
+          nullable: true
+          type: string
+        agents:
+          description: |
+            A list of the agents for a shipment. Agents are the people who the Prime contractor recognize as permitted to release (in the case of pickup) or receive (on delivery) a shipment.
+          items:
+            $ref: '#/components/schemas/MTOAgent'
+          maxItems: 2
+          type: array
+        mtoServiceItems:
+          description: A list of service items connected to this shipment.
+          items:
+            $ref: '#/components/schemas/MTOServiceItem'
+          type: array
+        pickupAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: The address where the movers should pick up this shipment.
+          type: object
+        destinationAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: Where the movers should deliver this shipment.
+          type: object
+        shipmentType:
+          $ref: '#/components/schemas/MTOShipmentType'
+        diversion:
+          description: |
+            This value indicates whether or not this shipment is part of a diversion. If yes, the shipment can be either the starting or ending segment of the diversion. When this boolean is true, you must link it to a parent shipment with the divertedFromShipmentId parameter.
+          type: boolean
+        divertedFromShipmentId:
+          description: |
+            The ID of the shipment this is a diversion from. Aka the "Parent" shipment. The diversion boolean must be true if this parameter is supplied in the request. If provided, and if the diverted from shipment is also a diversion, the previous should must then also have a parent ID.
+          example: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          format: uuid
+          type: string
+        pointOfContact:
+          description: |
+            Email or ID of the person who will be contacted in the event of questions or concerns about this update. May be the person performing the update, or someone else working with the Prime contractor.
+          type: string
+        counselorRemarks:
+          example: counselor approved
+          nullable: true
+          type: string
+        ppmShipment:
+          $ref: '#/components/schemas/CreatePPMShipment'
+      required:
+      - moveTaskOrderID
+      - shipmentType
+      type: object
+    CreatePPMShipment:
+      description: "Creation object containing the `PPM` shipmentType specific data,\
+        \ not used for other shipment types."
+      properties:
+        expectedDepartureDate:
+          description: |
+            Date the customer expects to begin moving from their origin.
+          format: date
+          type: string
+        pickupAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: The address of the origin location where goods are being moved
+            from.
+          type: object
+        destinationAddress:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          description: The address of the destination location where goods are being
+            delivered to.
+          type: object
+        sitExpected:
+          description: |
+            Captures whether some or all of the PPM shipment will require temporary storage at the origin or destination.
+
+            Must be set to `true` when providing `sitLocation`, `sitEstimatedWeight`, `sitEstimatedEntryDate`, and `sitEstimatedDepartureDate` values to calculate the `sitEstimatedCost`.
+          type: boolean
+        sitLocation:
+          allOf:
+          - $ref: '#/components/schemas/SITLocationType'
+          - type: object
+            x-nullable: true
+          type: object
+        sitEstimatedWeight:
+          description: The estimated weight of the goods being put into storage in
+            pounds.
+          example: 2000
+          nullable: true
+          type: integer
+        sitEstimatedEntryDate:
+          description: The date that goods will first enter the storage location.
+          format: date
+          nullable: true
+          type: string
+        sitEstimatedDepartureDate:
+          description: The date that goods will exit the storage location.
+          format: date
+          nullable: true
+          type: string
+        estimatedWeight:
+          description: The estimated weight of the PPM shipment goods being moved
+            in pounds.
+          example: 4200
+          type: integer
+        hasProGear:
+          description: |
+            Indicates whether PPM shipment has pro gear for themselves or their spouse.
+          type: boolean
+        proGearWeight:
+          description: The estimated weight of the pro-gear being moved belonging
+            to the service member in pounds.
+          nullable: true
+          type: integer
+        spouseProGearWeight:
+          description: The estimated weight of the pro-gear being moved belonging
+            to a spouse in pounds.
+          nullable: true
+          type: integer
+      required:
+      - estimatedWeight
+      - expectedDepartureDate
+      - hasProGear
+      - sitExpected
+      type: object
     MTOShipment:
       allOf:
       - $ref: '#/components/schemas/MTOShipmentWithoutServiceItems'
@@ -3602,118 +761,22 @@ components:
             $ref: '#/components/schemas/MTOServiceItem'
           readOnly: true
           type: array
-    UpdateShipmentDestinationAddress:
-      description: UpdateShipmentDestinationAddress contains the fields required for
-        the prime to request an update for the destination address on an MTO Shipment.
+    Error:
       example:
-        newAddress:
-          country: USA
-          city: Anytown
-          postalCode: "90210"
-          streetAddress1: 123 Main Ave
-          county: LOS ANGELES
-          streetAddress2: Apartment 9000
-          streetAddress3: Montmârtre
-          eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          state: AL
-        contractorRemarks: Customer reached out to me this week and let me know they
-          want to move somewhere else.
+        instance: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        detail: detail
+        title: title
       properties:
-        newAddress:
-          $ref: '#/components/schemas/Address'
-        contractorRemarks:
-          description: "This is the remark the Prime has entered, which would be the\
-            \ reason there is an address change."
-          example: Customer reached out to me this week and let me know they want
-            to move somewhere else.
+        title:
           type: string
-      required:
-      - contractorRemarks
-      - newAddress
-      type: object
-    CreateSITAddressUpdateRequest:
-      description: CreateSITAddressUpdateRequest contains the fields required for
-        the prime to create a SIT address update request.
-      example:
-        newAddress:
-          country: USA
-          city: Anytown
-          postalCode: "90210"
-          streetAddress1: 123 Main Ave
-          county: LOS ANGELES
-          streetAddress2: Apartment 9000
-          streetAddress3: Montmârtre
-          eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          state: AL
-        contractorRemarks: Customer reached out to me this week & let me know they
-          want to move closer to family.
-        mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
-      properties:
-        newAddress:
-          $ref: '#/components/schemas/Address'
-        contractorRemarks:
-          example: Customer reached out to me this week & let me know they want to
-            move closer to family.
+        detail:
           type: string
-        mtoServiceItemID:
-          example: c56a4180-65aa-42ec-a945-5fd21dec0538
+        instance:
           format: uuid
           type: string
       required:
-      - contractorRemarks
-      type: object
-    ServiceItem:
-      example:
-        eTag: eTag
-        id: c56a4180-65aa-42ec-a945-5fd21dec0538
-        params:
-        - value: Service Item Parameter Value
-          key: Service Item Parameter Name
-        - value: Service Item Parameter Value
-          key: Service Item Parameter Name
-      properties:
-        id:
-          example: c56a4180-65aa-42ec-a945-5fd21dec0538
-          format: uuid
-          type: string
-        params:
-          description: |
-            This should be populated for the following service items:
-              * DOASIT(Domestic origin Additional day SIT)
-              * DDASIT(Domestic destination Additional day SIT)
-
-            Both take in the following param keys:
-              * `SITPaymentRequestStart`
-              * `SITPaymentRequestEnd`
-
-            The value of each is a date string in the format "YYYY-MM-DD" (e.g. "2023-01-15")
-          items:
-            $ref: '#/components/schemas/ServiceItem_params_inner'
-          type: array
-        eTag:
-          readOnly: true
-          type: string
-      type: object
-    UpdateMTOServiceItem:
-      description: UpdateMTOServiceItem describes a base type of a service item. Polymorphic
-        type. Both Move Task Orders and MTO Shipments will have MTO Service Items.
-      discriminator:
-        propertyName: modelType
-      example:
-        id: 1f2270c7-7166-40ae-981e-b200ebdf3054
-        modelType: UpdateMTOServiceItemSIT
-      properties:
-        id:
-          description: ID of the service item. Must match path.
-          example: 1f2270c7-7166-40ae-981e-b200ebdf3054
-          format: uuid
-          type: string
-        modelType:
-          $ref: '#/components/schemas/UpdateMTOServiceItemModelType'
-      required:
-      - modelType
+      - detail
+      - title
       type: object
     UpdateMTOServiceItemModelType:
       description: |
@@ -3730,6 +793,22 @@ components:
       - UpdateMTOServiceItemSIT
       - UpdateMTOServiceItemShuttle
       type: string
+    UpdateMTOServiceItem:
+      description: UpdateMTOServiceItem describes a base type of a service item. Polymorphic
+        type. Both Move Task Orders and MTO Shipments will have MTO Service Items.
+      discriminator:
+        propertyName: modelType
+      properties:
+        id:
+          description: ID of the service item. Must match path.
+          example: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          format: uuid
+          type: string
+        modelType:
+          $ref: '#/components/schemas/UpdateMTOServiceItemModelType'
+      required:
+      - modelType
+      type: object
     UpdateMTOServiceItemShuttle:
       allOf:
       - $ref: '#/components/schemas/UpdateMTOServiceItem'
@@ -3757,157 +836,66 @@ components:
         type: object
       description: |
         Subtype used to provide the estimated weight and actual weight for shuttle. This is not creating a new service item but rather updating an existing service item.
-    UpdateMTOServiceItemSIT:
-      allOf:
-      - $ref: '#/components/schemas/UpdateMTOServiceItem'
-      - properties:
-          reServiceCode:
-            description: Service code allowed for this model type.
-            enum:
-            - DDDSIT
-            - DDASIT
-            - DOPSIT
-            - DOASIT
-            - DOFSIT
-            type: string
-          sitDepartureDate:
-            description: Departure date for SIT. This is the end date of the SIT at
-              either origin or destination.
-            format: date
-            type: string
-          sitDestinationFinalAddress:
-            $ref: '#/components/schemas/Address'
-          dateOfContact1:
-            description: Date of attempted contact by the prime corresponding to 'timeMilitary1'.
-            format: date
-            nullable: true
-            type: string
-          timeMilitary1:
-            description: "Time of attempted contact by the prime corresponding to\
-              \ 'dateOfContact1', in military format."
-            example: 1400Z
-            nullable: true
-            pattern: "\\d{4}Z"
-            type: string
-          firstAvailableDeliveryDate1:
-            description: First available date that Prime can deliver SIT service item.
-            format: date
-            nullable: true
-            type: string
-          dateOfContact2:
-            description: Date of attempted contact by the prime corresponding to 'timeMilitary2'.
-            format: date
-            nullable: true
-            type: string
-          timeMilitary2:
-            description: "Time of attempted contact by the prime corresponding to\
-              \ 'dateOfContact2', in military format."
-            example: 1400Z
-            nullable: true
-            pattern: "\\d{4}Z"
-            type: string
-          firstAvailableDeliveryDate2:
-            description: Second available date that Prime can deliver SIT service
-              item.
-            format: date
-            nullable: true
-            type: string
-          sitRequestedDelivery:
-            description: Date when the customer has requested delivery out of SIT.
-            format: date
-            nullable: true
-            type: string
-          sitCustomerContacted:
-            description: Date when the customer contacted the prime for a delivery
-              out of SIT.
-            format: date
-            nullable: true
-            type: string
-          updateReason:
-            description: Reason for updating service item.
-            nullable: true
-            type: string
-          sitPostalCode:
-            example: "90210"
-            format: zip
-            nullable: true
-            pattern: "^(\\d{5}([\\-]\\d{4})?)$"
-            type: string
-          sitEntryDate:
-            description: Entry date for the SIT.
-            format: date
-            nullable: true
-            type: string
-          requestApprovalsRequestedStatus:
-            description: Indicates if "Approvals Requested" status is being requested.
-            nullable: true
-            type: boolean
-        type: object
-      description: |
-        Subtype used to provide the departure date for origin or destination SIT. This is not creating a new service item but rather updating and existing service item.
-    UpdateMTOShipment:
-      example:
-        secondaryDeliveryAddress: "{}"
-        actualDeliveryDate: 2000-01-23
-        ppmShipment:
-          proGearWeight: 0
-          sitExpected: true
-          estimatedWeight: 4200
-          sitEstimatedWeight: 2000
-          hasProGear: true
-          sitLocation: "{}"
-          sitEstimatedEntryDate: 2000-01-23
-          sitEstimatedDepartureDate: 2000-01-23
-          spouseProGearWeight: 6
-          expectedDepartureDate: 2000-01-23
-        actualSpouseProGearWeight: 4500
-        primeEstimatedWeight: 4500
-        destinationAddress: "{}"
-        secondaryPickupAddress: "{}"
-        actualPickupDate: 2000-01-23
-        counselorRemarks: counselor approved
-        primeActualWeight: 4500
-        scheduledDeliveryDate: 2000-01-23
-        shipmentType: HHG
-        actualProGearWeight: 4500
-        pickupAddress: "{}"
-        storageFacility:
-          address:
-            country: USA
-            city: Anytown
-            postalCode: "90210"
-            streetAddress1: 123 Main Ave
-            county: LOS ANGELES
-            streetAddress2: Apartment 9000
-            streetAddress3: Montmârtre
-            eTag: eTag
-            id: c56a4180-65aa-42ec-a945-5fd21dec0538
-            state: AL
-          phone: phone
-          eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          facilityName: facilityName
-          lotNumber: lotNumber
-          email: email
-        diversion: true
-        scheduledPickupDate: 2000-01-23
-        destinationType: OTHER_THAN_AUTHORIZED
-        firstAvailableDeliveryDate: 2000-01-23
-        ntsRecordedWeight: 4500
-        pointOfContact: pointOfContact
+    UpdatePPMShipment:
+      description: The PPM specific fields of the shipment with values being changed
       properties:
-        actualProGearWeight:
-          description: The actual weight of any pro gear shipped during a move.
-          example: 4500
-          minimum: 1
+        expectedDepartureDate:
+          description: |
+            Date the customer expects to begin moving from their origin.
+          format: date
+          nullable: true
+          type: string
+        sitExpected:
+          description: |
+            Captures whether some or all of the PPM shipment will require temporary storage at the origin or destination.
+
+            Must be set to `true` when providing `sitLocation`, `sitEstimatedWeight`, `sitEstimatedEntryDate`, and `sitEstimatedDepartureDate` values to calculate the `sitEstimatedCost`.
+          nullable: true
+          type: boolean
+        sitLocation:
+          allOf:
+          - $ref: '#/components/schemas/SITLocationType'
+          - type: object
+            x-nullable: true
+          type: object
+        sitEstimatedWeight:
+          description: The estimated weight of the goods being put into storage.
+          example: 2000
           nullable: true
           type: integer
-        actualSpouseProGearWeight:
-          description: The actual weight of any pro gear shipped during a move.
-          example: 4500
-          minimum: 1
+        sitEstimatedEntryDate:
+          description: The date that goods will first enter the storage location.
+          format: date
+          nullable: true
+          type: string
+        sitEstimatedDepartureDate:
+          description: The date that goods will exit the storage location.
+          format: date
+          nullable: true
+          type: string
+        estimatedWeight:
+          description: The estimated weight of the PPM shipment goods being moved.
+          example: 4200
           nullable: true
           type: integer
+        hasProGear:
+          description: |
+            Indicates whether PPM shipment has pro gear for themselves or their spouse.
+          nullable: true
+          type: boolean
+        proGearWeight:
+          description: The estimated weight of the pro-gear being moved belonging
+            to the service member.
+          nullable: true
+          type: integer
+        spouseProGearWeight:
+          description: The estimated weight of the pro-gear being moved belonging
+            to a spouse.
+          nullable: true
+          type: integer
+      type: object
+    UpdateMTOShipment:
+      properties:
         scheduledPickupDate:
           description: The date the Prime contractor scheduled to pick up this shipment
             after consultation with the customer.
@@ -4011,83 +999,20 @@ components:
           example: counselor approved
           nullable: true
           type: string
+        actualProGearWeight:
+          nullable: true
+          type: integer
+          x-omitempty: false
+        actualSpouseProGearWeight:
+          nullable: true
+          type: integer
+          x-omitempty: false
         ppmShipment:
           $ref: '#/components/schemas/UpdatePPMShipment'
-      type: object
-    UpdatePPMShipment:
-      description: The PPM specific fields of the shipment with values being changed
-      example:
-        proGearWeight: 0
-        sitExpected: true
-        estimatedWeight: 4200
-        sitEstimatedWeight: 2000
-        hasProGear: true
-        sitLocation: "{}"
-        sitEstimatedEntryDate: 2000-01-23
-        sitEstimatedDepartureDate: 2000-01-23
-        spouseProGearWeight: 6
-        expectedDepartureDate: 2000-01-23
-      properties:
-        expectedDepartureDate:
-          description: |
-            Date the customer expects to begin moving from their origin.
-          format: date
-          nullable: true
-          type: string
-        sitExpected:
-          description: |
-            Captures whether some or all of the PPM shipment will require temporary storage at the origin or destination.
-
-            Must be set to `true` when providing `sitLocation`, `sitEstimatedWeight`, `sitEstimatedEntryDate`, and `sitEstimatedDepartureDate` values to calculate the `sitEstimatedCost`.
-          nullable: true
-          type: boolean
-        sitLocation:
-          allOf:
-          - $ref: '#/components/schemas/SITLocationType'
-          - type: object
-            x-nullable: true
-          type: object
-        sitEstimatedWeight:
-          description: The estimated weight of the goods being put into storage.
-          example: 2000
-          nullable: true
-          type: integer
-        sitEstimatedEntryDate:
-          description: The date that goods will first enter the storage location.
-          format: date
-          nullable: true
-          type: string
-        sitEstimatedDepartureDate:
-          description: The date that goods will exit the storage location.
-          format: date
-          nullable: true
-          type: string
-        estimatedWeight:
-          description: The estimated weight of the PPM shipment goods being moved.
-          example: 4200
-          nullable: true
-          type: integer
-        hasProGear:
-          description: |
-            Indicates whether PPM shipment has pro gear for themselves or their spouse.
-          nullable: true
-          type: boolean
-        proGearWeight:
-          description: The estimated weight of the pro-gear being moved belonging
-            to the service member.
-          nullable: true
-          type: integer
-        spouseProGearWeight:
-          description: The estimated weight of the pro-gear being moved belonging
-            to a spouse.
-          nullable: true
-          type: integer
       type: object
     UpdateMTOShipmentStatus:
       description: Contains the statuses available to the Prime when updating the
         state of a shipment.
-      example:
-        status: CANCELED
       properties:
         status:
           enum:
@@ -4097,10 +1022,6 @@ components:
     UpdateReweigh:
       description: Contains the fields available to the Prime when updating a reweigh
         record.
-      example:
-        weight: 2000
-        verificationReason: The reweigh was not performed because the shipment was
-          already delivered
       properties:
         weight:
           description: The total reweighed weight for the shipment in pounds.
@@ -4119,23 +1040,152 @@ components:
           type: string
           x-omitempty: false
       type: object
-    ClientError:
-      example:
-        instance: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        detail: detail
-        title: title
+    UpdateShipmentDestinationAddress:
+      description: UpdateShipmentDestinationAddress contains the fields required for
+        the prime to request an update for the destination address on an MTO Shipment.
       properties:
-        title:
+        newAddress:
+          $ref: '#/components/schemas/Address'
+        contractorRemarks:
+          description: "This is the remark the Prime has entered, which would be the\
+            \ reason there is an address change."
+          example: Customer reached out to me this week and let me know they want
+            to move somewhere else.
           type: string
-        detail:
+      required:
+      - contractorRemarks
+      - newAddress
+      type: object
+    UpdateMTOServiceItemSIT:
+      allOf:
+      - $ref: '#/components/schemas/UpdateMTOServiceItem'
+      - properties:
+          reServiceCode:
+            description: Service code allowed for this model type.
+            enum:
+            - DDDSIT
+            - DOPSIT
+            - DOASIT
+            - DOFSIT
+            type: string
+          sitDepartureDate:
+            description: Departure date for SIT. This is the end date of the SIT at
+              either origin or destination.
+            format: date
+            type: string
+          sitDestinationFinalAddress:
+            $ref: '#/components/schemas/Address'
+          dateOfContact1:
+            description: Date of attempted contact by the prime corresponding to 'timeMilitary1'.
+            format: date
+            nullable: true
+            type: string
+          timeMilitary1:
+            description: "Time of attempted contact by the prime corresponding to\
+              \ 'dateOfContact1', in military format."
+            example: 1400Z
+            nullable: true
+            pattern: "\\d{4}Z"
+            type: string
+          firstAvailableDeliveryDate1:
+            description: First available date that Prime can deliver SIT service item.
+            format: date
+            nullable: true
+            type: string
+          dateOfContact2:
+            description: Date of attempted contact by the prime corresponding to 'timeMilitary2'.
+            format: date
+            nullable: true
+            type: string
+          timeMilitary2:
+            description: "Time of attempted contact by the prime corresponding to\
+              \ 'dateOfContact2', in military format."
+            example: 1400Z
+            nullable: true
+            pattern: "\\d{4}Z"
+            type: string
+          firstAvailableDeliveryDate2:
+            description: Second available date that Prime can deliver SIT service
+              item.
+            format: date
+            nullable: true
+            type: string
+          sitRequestedDelivery:
+            description: Date when the customer has requested delivery out of SIT.
+            format: date
+            nullable: true
+            type: string
+          sitCustomerContacted:
+            description: Date when the customer contacted the prime for a delivery
+              out of SIT.
+            format: date
+            nullable: true
+            type: string
+          updateReason:
+            description: Reason for updating service item.
+            nullable: true
+            type: string
+          sitPostalCode:
+            example: "90210"
+            format: zip
+            nullable: true
+            pattern: "^(\\d{5}([\\-]\\d{4})?)$"
+            type: string
+          sitEntryDate:
+            description: Entry date for the SIT.
+            format: date
+            nullable: true
+            type: string
+          requestApprovalsRequestedStatus:
+            description: Indicates if "Approvals Requested" status is being requested.
+            nullable: true
+            type: boolean
+        type: object
+      description: |
+        Subtype used to provide the departure date for origin or destination SIT. This is not creating a new service item but rather updating and existing service item.
+    CreateSITExtension:
+      description: CreateSITExtension contains the fields required for the prime to
+        create a SIT Extension request.
+      properties:
+        requestReason:
+          enum:
+          - SERIOUS_ILLNESS_MEMBER
+          - SERIOUS_ILLNESS_DEPENDENT
+          - IMPENDING_ASSIGNEMENT
+          - DIRECTED_TEMPORARY_DUTY
+          - NONAVAILABILITY_OF_CIVILIAN_HOUSING
+          - AWAITING_COMPLETION_OF_RESIDENCE
+          - OTHER
           type: string
-        instance:
+        contractorRemarks:
+          example: We need SIT additional days. The customer has not found a house
+            yet.
+          type: string
+        requestedDays:
+          example: 30
+          minimum: 1
+          type: integer
+      required:
+      - contractorRemarks
+      - requestReason
+      - requestedDays
+      type: object
+    CreateSITAddressUpdateRequest:
+      description: CreateSITAddressUpdateRequest contains the fields required for
+        the prime to create a SIT address update request.
+      properties:
+        newAddress:
+          $ref: '#/components/schemas/Address'
+        contractorRemarks:
+          example: Customer reached out to me this week & let me know they want to
+            move closer to family.
+          type: string
+        mtoServiceItemID:
+          example: c56a4180-65aa-42ec-a945-5fd21dec0538
           format: uuid
           type: string
       required:
-      - detail
-      - instance
-      - title
+      - contractorRemarks
       type: object
     Address:
       description: A postal address
@@ -4493,6 +1543,7 @@ components:
       example:
         orderNumber: orderNumber
         linesOfAccounting: linesOfAccounting
+        supplyAndServicesCostEstimate: supplyAndServicesCostEstimate
         entitlement:
           proGearWeightSpouse: 500
           authorizedWeight: 2000
@@ -4540,12 +1591,15 @@ components:
           eTag: eTag
           id: c56a4180-65aa-42ec-a945-5fd21dec0538
           addressID: c56a4180-65aa-42ec-a945-5fd21dec0538
+        methodOfPayment: methodOfPayment
         originDutyLocationGBLOC: KKFA
+        packingAndShippingInstructions: packingAndShippingInstructions
         customerID: c56a4180-65aa-42ec-a945-5fd21dec0538
         rank: E_5
         eTag: eTag
         id: c56a4180-65aa-42ec-a945-5fd21dec0538
         reportByDate: 2000-01-23
+        naics: naics
         ordersType: PERMANENT_CHANGE_OF_STATION
         customer:
           dodID: dodID
@@ -4600,6 +1654,18 @@ components:
         orderNumber:
           type: string
         linesOfAccounting:
+          type: string
+        supplyAndServicesCostEstimate:
+          readOnly: true
+          type: string
+        packingAndShippingInstructions:
+          readOnly: true
+          type: string
+        methodOfPayment:
+          readOnly: true
+          type: string
+        naics:
+          readOnly: true
           type: string
         eTag:
           readOnly: true
@@ -6258,48 +3324,842 @@ components:
       items:
         $ref: '#/components/schemas/MTOShipmentWithoutServiceItems'
       type: array
-    ExcessWeightRecord:
-      allOf:
-      - $ref: '#/components/schemas/UploadWithOmissions'
-      - properties:
-          moveId:
-            description: The UUID of the move this excess weight record belongs to.
-            example: 1f2270c7-7166-40ae-981e-b200ebdf3054
-            format: uuid
-            type: string
-          moveExcessWeightQualifiedAt:
-            description: |
-              The date and time when the sum of all the move's shipments met the excess weight qualification threshold. The system monitors these weights and will update this field automatically.
-            format: date-time
-            nullable: true
-            readOnly: true
-            type: string
-            x-omitempty: false
-          moveExcessWeightAcknowledgedAt:
-            description: |
-              The date and time when the TOO acknowledged the excess weight alert, either by dismissing the risk or updating the max billable weight. This will occur after the excess weight record has been uploaded.
-            format: date-time
-            nullable: true
-            readOnly: true
-            type: string
-            x-omitempty: false
-        required:
-        - moveId
-        type: object
-      description: A document uploaded by the movers proving that the customer has
-        been counseled about excess weight.
+    MoveTaskOrder:
       example:
+        moveCode: HYXFJF
+        paymentRequests:
+        - moveTaskOrderID: c56a4180-65aa-42ec-a945-5fd21dec0538
+          paymentRequestNumber: 1234-5678-1
+          proofOfServiceDocs:
+          - uploads:
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+          - uploads:
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+          recalculationOfPaymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
+          eTag: eTag
+          id: c56a4180-65aa-42ec-a945-5fd21dec0538
+          isFinal: false
+          rejectionReason: documentation was incomplete
+          status: PENDING
+          paymentServiceItems:
+          - paymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            priceCents: 6
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            rejectionReason: documentation was incomplete
+            paymentServiceItemParams:
+            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+              origin: PRIME
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              type: STRING
+              value: "3025"
+              key: ActualPickupDate
+            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+              origin: PRIME
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              type: STRING
+              value: "3025"
+              key: ActualPickupDate
+            referenceID: 1234-5678-c56a4180
+            mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            status: REQUESTED
+          - paymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            priceCents: 6
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            rejectionReason: documentation was incomplete
+            paymentServiceItemParams:
+            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+              origin: PRIME
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              type: STRING
+              value: "3025"
+              key: ActualPickupDate
+            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+              origin: PRIME
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              type: STRING
+              value: "3025"
+              key: ActualPickupDate
+            referenceID: 1234-5678-c56a4180
+            mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            status: REQUESTED
+        - moveTaskOrderID: c56a4180-65aa-42ec-a945-5fd21dec0538
+          paymentRequestNumber: 1234-5678-1
+          proofOfServiceDocs:
+          - uploads:
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+          - uploads:
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+          recalculationOfPaymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
+          eTag: eTag
+          id: c56a4180-65aa-42ec-a945-5fd21dec0538
+          isFinal: false
+          rejectionReason: documentation was incomplete
+          status: PENDING
+          paymentServiceItems:
+          - paymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            priceCents: 6
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            rejectionReason: documentation was incomplete
+            paymentServiceItemParams:
+            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+              origin: PRIME
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              type: STRING
+              value: "3025"
+              key: ActualPickupDate
+            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+              origin: PRIME
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              type: STRING
+              value: "3025"
+              key: ActualPickupDate
+            referenceID: 1234-5678-c56a4180
+            mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            status: REQUESTED
+          - paymentRequestID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            priceCents: 6
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            rejectionReason: documentation was incomplete
+            paymentServiceItemParams:
+            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+              origin: PRIME
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              type: STRING
+              value: "3025"
+              key: ActualPickupDate
+            - paymentServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+              origin: PRIME
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              type: STRING
+              value: "3025"
+              key: ActualPickupDate
+            referenceID: 1234-5678-c56a4180
+            mtoServiceItemID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            status: REQUESTED
+        orderID: c56a4180-65aa-42ec-a945-5fd21dec0538
+        ppmType: PARTIAL
+        contractNumber: contractNumber
+        referenceId: 1001-3456
+        excessWeightAcknowledgedAt: 2000-01-23T04:56:07.000+00:00
         createdAt: 2000-01-23T04:56:07.000+00:00
-        moveExcessWeightAcknowledgedAt: 2000-01-23T04:56:07.000+00:00
-        filename: filename.pdf
-        bytes: 0
-        id: c56a4180-65aa-42ec-a945-5fd21dec0538
-        moveExcessWeightQualifiedAt: 2000-01-23T04:56:07.000+00:00
-        contentType: application/pdf
-        url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
-        status: INFECTED
+        mtoShipments:
+        - sitExtensions:
+          - createdAt: 2000-01-23T04:56:07.000+00:00
+            requestedDays: 30
+            requestReason: SERIOUS_ILLNESS_MEMBER
+            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            approvedDays: 30
+            officeRemarks: officeRemarks
+            contractorRemarks: We need SIT additional days. The customer has not found
+              a house yet.
+            status: PENDING
+            decisionDate: 2000-01-23T04:56:07.000+00:00
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          - createdAt: 2000-01-23T04:56:07.000+00:00
+            requestedDays: 30
+            requestReason: SERIOUS_ILLNESS_MEMBER
+            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            approvedDays: 30
+            officeRemarks: officeRemarks
+            contractorRemarks: We need SIT additional days. The customer has not found
+              a house yet.
+            status: PENDING
+            decisionDate: 2000-01-23T04:56:07.000+00:00
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          secondaryDeliveryAddress: "{}"
+          ppmShipment:
+            hasProGear: true
+            actualMoveDate: 2000-01-23
+            reviewedAt: 2000-01-23T04:56:07.000+00:00
+            sitEstimatedCost: 2
+            createdAt: 2000-01-23T04:56:07.000+00:00
+            estimatedIncentive: 7
+            advanceAmountRequested: 9
+            sitEstimatedWeight: 2000
+            hasRequestedAdvance: true
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            submittedAt: 2000-01-23T04:56:07.000+00:00
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+            actualPickupPostalCode: "90210"
+            sitExpected: true
+            advanceAmountReceived: 3
+            approvedAt: 2000-01-23T04:56:07.000+00:00
+            sitEstimatedDepartureDate: 2000-01-23
+            expectedDepartureDate: 2000-01-23
+            proGearWeight: 5
+            hasReceivedAdvance: true
+            estimatedWeight: 4200
+            shipmentId: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            sitLocation: "{}"
+            sitEstimatedEntryDate: 2000-01-23
+            spouseProGearWeight: 2
+            status: DRAFT
+            actualDestinationPostalCode: "90210"
+          moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          primeEstimatedWeight: 4500
+          destinationAddress: "{}"
+          secondaryPickupAddress: "{}"
+          counselorRemarks: handle with care
+          requestedPickupDate: 2000-01-23
+          scheduledDeliveryDate: 2000-01-23
+          shipmentType: HHG
+          createdAt: 2000-01-23T04:56:07.000+00:00
+          originSitAuthEndDate: 2000-01-23
+          primeEstimatedWeightRecordedDate: 2000-01-23
+          storageFacility:
+            address:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            phone: phone
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            facilityName: facilityName
+            lotNumber: lotNumber
+            email: email
+          deliveryAddressUpdate:
+            newSitDistanceBetween: 88
+            sitOriginalAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            originalAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            shipmentID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            oldSitDistanceBetween: 50
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            officeRemarks: This is an office remark
+            contractorRemarks: This is a contractor remark
+            newAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            status: REQUESTED
+          scheduledPickupDate: 2000-01-23
+          destinationType: OTHER_THAN_AUTHORIZED
+          eTag: eTag
+          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          diversionReason: diversionReason
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+          pointOfContact: pointOfContact
+          actualDeliveryDate: 2000-01-23
+          actualSpouseProGearWeight: 5
+          actualPickupDate: 2000-01-23
+          primeActualWeight: 4500
+          agents:
+          - createdAt: 2000-01-23T04:56:07.000+00:00
+            firstName: firstName
+            lastName: lastName
+            agentType: RELEASING_AGENT
+            phone: phone
+            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            email: email
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          - createdAt: 2000-01-23T04:56:07.000+00:00
+            firstName: firstName
+            lastName: lastName
+            agentType: RELEASING_AGENT
+            phone: phone
+            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            email: email
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          approvedDate: 2000-01-23
+          requiredDeliveryDate: 2000-01-23
+          actualProGearWeight: 1
+          reweigh:
+            requestedBy: CUSTOMER
+            createdAt: 2000-01-23T04:56:07.000+00:00
+            requestedAt: 2000-01-23T04:56:07.000+00:00
+            shipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            weight: 2000
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            verificationProvidedAt: 2000-01-23T04:56:07.000+00:00
+            verificationReason: The reweigh was not performed due to some justification
+              provided by the Prime
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          pickupAddress: "{}"
+          destinationSitAuthEndDate: 2000-01-23
+          requestedDeliveryDate: 2000-01-23
+          diversion: true
+          customerRemarks: handle with care
+          firstAvailableDeliveryDate: 2000-01-23
+          ntsRecordedWeight: 4500
+          status: SUBMITTED
+        - sitExtensions:
+          - createdAt: 2000-01-23T04:56:07.000+00:00
+            requestedDays: 30
+            requestReason: SERIOUS_ILLNESS_MEMBER
+            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            approvedDays: 30
+            officeRemarks: officeRemarks
+            contractorRemarks: We need SIT additional days. The customer has not found
+              a house yet.
+            status: PENDING
+            decisionDate: 2000-01-23T04:56:07.000+00:00
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          - createdAt: 2000-01-23T04:56:07.000+00:00
+            requestedDays: 30
+            requestReason: SERIOUS_ILLNESS_MEMBER
+            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            approvedDays: 30
+            officeRemarks: officeRemarks
+            contractorRemarks: We need SIT additional days. The customer has not found
+              a house yet.
+            status: PENDING
+            decisionDate: 2000-01-23T04:56:07.000+00:00
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          secondaryDeliveryAddress: "{}"
+          ppmShipment:
+            hasProGear: true
+            actualMoveDate: 2000-01-23
+            reviewedAt: 2000-01-23T04:56:07.000+00:00
+            sitEstimatedCost: 2
+            createdAt: 2000-01-23T04:56:07.000+00:00
+            estimatedIncentive: 7
+            advanceAmountRequested: 9
+            sitEstimatedWeight: 2000
+            hasRequestedAdvance: true
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            submittedAt: 2000-01-23T04:56:07.000+00:00
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+            actualPickupPostalCode: "90210"
+            sitExpected: true
+            advanceAmountReceived: 3
+            approvedAt: 2000-01-23T04:56:07.000+00:00
+            sitEstimatedDepartureDate: 2000-01-23
+            expectedDepartureDate: 2000-01-23
+            proGearWeight: 5
+            hasReceivedAdvance: true
+            estimatedWeight: 4200
+            shipmentId: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            sitLocation: "{}"
+            sitEstimatedEntryDate: 2000-01-23
+            spouseProGearWeight: 2
+            status: DRAFT
+            actualDestinationPostalCode: "90210"
+          moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          primeEstimatedWeight: 4500
+          destinationAddress: "{}"
+          secondaryPickupAddress: "{}"
+          counselorRemarks: handle with care
+          requestedPickupDate: 2000-01-23
+          scheduledDeliveryDate: 2000-01-23
+          shipmentType: HHG
+          createdAt: 2000-01-23T04:56:07.000+00:00
+          originSitAuthEndDate: 2000-01-23
+          primeEstimatedWeightRecordedDate: 2000-01-23
+          storageFacility:
+            address:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            phone: phone
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            facilityName: facilityName
+            lotNumber: lotNumber
+            email: email
+          deliveryAddressUpdate:
+            newSitDistanceBetween: 88
+            sitOriginalAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            originalAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            shipmentID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            oldSitDistanceBetween: 50
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            officeRemarks: This is an office remark
+            contractorRemarks: This is a contractor remark
+            newAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            status: REQUESTED
+          scheduledPickupDate: 2000-01-23
+          destinationType: OTHER_THAN_AUTHORIZED
+          eTag: eTag
+          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          diversionReason: diversionReason
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+          pointOfContact: pointOfContact
+          actualDeliveryDate: 2000-01-23
+          actualSpouseProGearWeight: 5
+          actualPickupDate: 2000-01-23
+          primeActualWeight: 4500
+          agents:
+          - createdAt: 2000-01-23T04:56:07.000+00:00
+            firstName: firstName
+            lastName: lastName
+            agentType: RELEASING_AGENT
+            phone: phone
+            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            email: email
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          - createdAt: 2000-01-23T04:56:07.000+00:00
+            firstName: firstName
+            lastName: lastName
+            agentType: RELEASING_AGENT
+            phone: phone
+            mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            email: email
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          approvedDate: 2000-01-23
+          requiredDeliveryDate: 2000-01-23
+          actualProGearWeight: 1
+          reweigh:
+            requestedBy: CUSTOMER
+            createdAt: 2000-01-23T04:56:07.000+00:00
+            requestedAt: 2000-01-23T04:56:07.000+00:00
+            shipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            weight: 2000
+            eTag: eTag
+            id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+            verificationProvidedAt: 2000-01-23T04:56:07.000+00:00
+            verificationReason: The reweigh was not performed due to some justification
+              provided by the Prime
+            updatedAt: 2000-01-23T04:56:07.000+00:00
+          pickupAddress: "{}"
+          destinationSitAuthEndDate: 2000-01-23
+          requestedDeliveryDate: 2000-01-23
+          diversion: true
+          customerRemarks: handle with care
+          firstAvailableDeliveryDate: 2000-01-23
+          ntsRecordedWeight: 4500
+          status: SUBMITTED
+        excessWeightUploadId: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        mtoServiceItems:
+        - moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          serviceRequestDocuments:
+          - uploads:
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+          - uploads:
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+          reServiceName: reServiceName
+          mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          eTag: eTag
+          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          modelType: MTOServiceItemBasic
+          rejectionReason: item was too heavy
+          status: SUBMITTED
+        - moveTaskOrderID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          serviceRequestDocuments:
+          - uploads:
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+          - uploads:
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+            - createdAt: 2000-01-23T04:56:07.000+00:00
+              filename: filename.pdf
+              bytes: 0
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              contentType: application/pdf
+              url: https://uploads.domain.test/dir/c56a4180-65aa-42ec-a945-5fd21dec0538
+              status: INFECTED
+              updatedAt: 2000-01-23T04:56:07.000+00:00
+          reServiceName: reServiceName
+          mtoShipmentID: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          eTag: eTag
+          id: 1f2270c7-7166-40ae-981e-b200ebdf3054
+          modelType: MTOServiceItemBasic
+          rejectionReason: item was too heavy
+          status: SUBMITTED
+        ppmEstimatedWeight: 4
+        eTag: eTag
+        id: a502b4f1-b9c4-4faf-8bdd-68292501bf26
+        availableToPrimeAt: 2000-01-23T04:56:07.000+00:00
+        order:
+          orderNumber: orderNumber
+          linesOfAccounting: linesOfAccounting
+          supplyAndServicesCostEstimate: supplyAndServicesCostEstimate
+          entitlement:
+            proGearWeightSpouse: 500
+            authorizedWeight: 2000
+            proGearWeight: 2000
+            nonTemporaryStorage: false
+            organizationalClothingAndIndividualEquipment: false
+            gunSafe: false
+            privatelyOwnedVehicle: false
+            requiredMedicalEquipmentWeight: 500
+            storageInTransit: 90
+            totalWeight: 500
+            totalDependents: 2
+            eTag: eTag
+            id: 571008b1-b0de-454d-b843-d71be9f02c04
+            dependentsAuthorized: true
+          destinationDutyLocation:
+            address:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            name: Fort Bragg North Station
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            addressID: c56a4180-65aa-42ec-a945-5fd21dec0538
+          originDutyLocation:
+            address:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
+            name: Fort Bragg North Station
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            addressID: c56a4180-65aa-42ec-a945-5fd21dec0538
+          methodOfPayment: methodOfPayment
+          originDutyLocationGBLOC: KKFA
+          packingAndShippingInstructions: packingAndShippingInstructions
+          customerID: c56a4180-65aa-42ec-a945-5fd21dec0538
+          rank: E_5
+          eTag: eTag
+          id: c56a4180-65aa-42ec-a945-5fd21dec0538
+          reportByDate: 2000-01-23
+          naics: naics
+          ordersType: PERMANENT_CHANGE_OF_STATION
+          customer:
+            dodID: dodID
+            emplid: emplid
+            firstName: Vanya
+            lastName: Petrovna
+            phone: phone
+            eTag: eTag
+            id: c56a4180-65aa-42ec-a945-5fd21dec0538
+            userID: c56a4180-65aa-42ec-a945-5fd21dec0538
+            branch: COAST_GUARD
+            email: fake@example.com
+            currentAddress:
+              country: USA
+              city: Anytown
+              postalCode: "90210"
+              streetAddress1: 123 Main Ave
+              county: LOS ANGELES
+              streetAddress2: Apartment 9000
+              streetAddress3: Montmârtre
+              eTag: eTag
+              id: c56a4180-65aa-42ec-a945-5fd21dec0538
+              state: AL
         updatedAt: 2000-01-23T04:56:07.000+00:00
-        moveId: 1f2270c7-7166-40ae-981e-b200ebdf3054
+        primeCounselingCompletedAt: 2000-01-23T04:56:07.000+00:00
+        excessWeightQualifiedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          example: a502b4f1-b9c4-4faf-8bdd-68292501bf26
+          format: uuid
+          type: string
+        moveCode:
+          example: HYXFJF
+          readOnly: true
+          type: string
+        createdAt:
+          format: date-time
+          readOnly: true
+          type: string
+        orderID:
+          example: c56a4180-65aa-42ec-a945-5fd21dec0538
+          format: uuid
+          type: string
+        order:
+          $ref: '#/components/schemas/Order'
+        referenceId:
+          example: 1001-3456
+          type: string
+        availableToPrimeAt:
+          format: date-time
+          nullable: true
+          readOnly: true
+          type: string
+        updatedAt:
+          format: date-time
+          readOnly: true
+          type: string
+        primeCounselingCompletedAt:
+          format: date-time
+          nullable: true
+          readOnly: true
+          type: string
+        paymentRequests:
+          items:
+            $ref: '#/components/schemas/PaymentRequest'
+          type: array
+        mtoServiceItems:
+          items:
+            $ref: '#/components/schemas/MTOServiceItem'
+          type: array
+        mtoShipments:
+          description: A list of shipments without their associated service items.
+          items:
+            $ref: '#/components/schemas/MTOShipmentWithoutServiceItems'
+          type: array
+        ppmType:
+          enum:
+          - PARTIAL
+          - FULL
+          type: string
+        ppmEstimatedWeight:
+          type: integer
+        excessWeightQualifiedAt:
+          format: date-time
+          nullable: true
+          readOnly: true
+          type: string
+          x-omitempty: false
+        excessWeightAcknowledgedAt:
+          format: date-time
+          nullable: true
+          readOnly: true
+          type: string
+          x-omitempty: false
+        excessWeightUploadId:
+          format: uuid
+          nullable: true
+          readOnly: true
+          type: string
+          x-omitempty: false
+        contractNumber:
+          readOnly: true
+          type: string
+        eTag:
+          readOnly: true
+          type: string
+      required:
+      - mtoServiceItems
+      - mtoShipments
+      - paymentRequests
+      type: object
+    ClientError:
+      example:
+        instance: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        detail: detail
+        title: title
+      properties:
+        title:
+          type: string
+        detail:
+          type: string
+        instance:
+          format: uuid
+          type: string
+      required:
+      - detail
+      - instance
+      - title
+      type: object
     ValidationError:
       allOf:
       - $ref: '#/components/schemas/ClientError'
@@ -6322,107 +4182,6 @@ components:
           - invalidFields
         detail: detail
         title: title
-    SitAddressUpdateStatus:
-      description: "The status of a SIT address update, indicating where it is in\
-        \ the TOO's approval process."
-      enum:
-      - REQUESTED
-      - APPROVED
-      - REJECTED
-      type: object
-    SitAddressUpdate:
-      example:
-        distance: 25
-        newAddressId: 31a2ad3c-1682-4d5b-8423-ff40053a056b
-        oldAddressId: 31a2ad3c-1682-4d5b-8423-ff40053a056b
-        contractorRemarks: Customer reached out to me this week & let me know they
-          want to move closer to family.
-        mtoServiceItemId: 12d9e103-5a56-4636-906d-6e993b97ef51
-        oldAddress:
-          country: USA
-          city: Anytown
-          postalCode: "90210"
-          streetAddress1: 123 Main Ave
-          county: LOS ANGELES
-          streetAddress2: Apartment 9000
-          streetAddress3: Montmârtre
-          eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          state: AL
-        createdAt: 2000-01-23T04:56:07.000+00:00
-        eTag: eTag
-        id: ddd7bb48-4730-47c4-9781-6500384f4941
-        officeRemarks: The customer has found a new house closer to base.
-        newAddress:
-          country: USA
-          city: Anytown
-          postalCode: "90210"
-          streetAddress1: 123 Main Ave
-          county: LOS ANGELES
-          streetAddress2: Apartment 9000
-          streetAddress3: Montmârtre
-          eTag: eTag
-          id: c56a4180-65aa-42ec-a945-5fd21dec0538
-          state: AL
-        status: "{}"
-        updatedAt: 2000-01-23T04:56:07.000+00:00
-      properties:
-        id:
-          example: ddd7bb48-4730-47c4-9781-6500384f4941
-          format: uuid
-          readOnly: true
-          type: string
-        mtoServiceItemId:
-          example: 12d9e103-5a56-4636-906d-6e993b97ef51
-          format: uuid
-          readOnly: true
-          type: string
-        newAddressId:
-          example: 31a2ad3c-1682-4d5b-8423-ff40053a056b
-          format: uuid
-          readOnly: true
-          type: string
-        newAddress:
-          $ref: '#/components/schemas/Address'
-        oldAddressId:
-          example: 31a2ad3c-1682-4d5b-8423-ff40053a056b
-          format: uuid
-          readOnly: true
-          type: string
-        oldAddress:
-          $ref: '#/components/schemas/Address'
-        status:
-          $ref: '#/components/schemas/SitAddressUpdateStatus'
-        distance:
-          example: 25
-          maximum: 50
-          readOnly: true
-          type: integer
-        contractorRemarks:
-          example: Customer reached out to me this week & let me know they want to
-            move closer to family.
-          nullable: true
-          type: string
-          x-omitempty: false
-        officeRemarks:
-          example: The customer has found a new house closer to base.
-          nullable: true
-          type: string
-          x-omitempty: false
-        createdAt:
-          format: date-time
-          readOnly: true
-          type: string
-        updatedAt:
-          format: date-time
-          readOnly: true
-          type: string
-        eTag:
-          description: A hash unique to this shipment that should be used as the "If-Match"
-            header for any updates.
-          readOnly: true
-          type: string
-      type: object
     ReServiceCode:
       description: |
         This is the full list of service items that can be found on a shipment. Not all service items
@@ -6480,6 +4239,72 @@ components:
       - NSTH
       - NSTUB
       type: string
+    SitAddressUpdateStatus:
+      description: "The status of a SIT address update, indicating where it is in\
+        \ the TOO's approval process."
+      enum:
+      - REQUESTED
+      - APPROVED
+      - REJECTED
+      type: object
+    SitAddressUpdate:
+      properties:
+        id:
+          example: ddd7bb48-4730-47c4-9781-6500384f4941
+          format: uuid
+          readOnly: true
+          type: string
+        mtoServiceItemId:
+          example: 12d9e103-5a56-4636-906d-6e993b97ef51
+          format: uuid
+          readOnly: true
+          type: string
+        newAddressId:
+          example: 31a2ad3c-1682-4d5b-8423-ff40053a056b
+          format: uuid
+          readOnly: true
+          type: string
+        newAddress:
+          $ref: '#/components/schemas/Address'
+        oldAddressId:
+          example: 31a2ad3c-1682-4d5b-8423-ff40053a056b
+          format: uuid
+          readOnly: true
+          type: string
+        oldAddress:
+          $ref: '#/components/schemas/Address'
+        status:
+          $ref: '#/components/schemas/SitAddressUpdateStatus'
+        distance:
+          example: 25
+          maximum: 50
+          readOnly: true
+          type: integer
+        contractorRemarks:
+          example: Customer reached out to me this week & let me know they want to
+            move closer to family.
+          nullable: true
+          type: string
+          x-omitempty: false
+        officeRemarks:
+          example: The customer has found a new house closer to base.
+          nullable: true
+          type: string
+          x-omitempty: false
+        createdAt:
+          format: date-time
+          readOnly: true
+          type: string
+        updatedAt:
+          format: date-time
+          readOnly: true
+          type: string
+        eTag:
+          description: A hash unique to this shipment that should be used as the "If-Match"
+            header for any updates.
+          readOnly: true
+          type: string
+      type: object
     SitAddressUpdates:
       description: A list of updates to a SIT service item address.
       items:
@@ -6513,44 +4338,11 @@ components:
       - length
       - width
       type: object
-    createExcessWeightRecord_request:
-      properties:
-        file:
-          description: The file to upload.
-          format: binary
-          type: string
-      required:
-      - file
-      type: object
-    createUpload_request:
-      properties:
-        file:
-          description: The file to upload.
-          format: binary
-          type: string
-        isWeightTicket:
-          description: Indicates whether the file is a weight ticket.
-          type: boolean
-      required:
-      - file
-      type: object
     MTOServiceItemDomesticCrating_allOf_item:
       description: The dimensions of the item being crated.
       type: object
     MTOServiceItemDomesticCrating_allOf_crate:
       description: The dimensions for the crate the item will be shipped in.
-      type: object
-    ServiceItem_params_inner:
-      example:
-        value: Service Item Parameter Value
-        key: Service Item Parameter Name
-      properties:
-        key:
-          example: Service Item Parameter Name
-          type: string
-        value:
-          example: Service Item Parameter Value
-          type: string
       type: object
     UpdateMTOShipment_storageFacility:
       allOf:
@@ -6581,7 +4373,4 @@ x-tagGroups:
   tags:
   - moveTaskOrder
   - mtoShipment
-  - mtoServiceItem
-  - paymentRequest
-  - sitAddressUpdate
 x-original-swagger-version: "2.0"
